@@ -4,314 +4,142 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pomodoro Minimalista</title>
-    
-    <!-- Link para o Manifest do PWA -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#bb2246" id="meta-theme-color">
-    
-    <!-- Ícone para iOS (Ajustado para minúsculo conforme seu arquivo no GitHub) -->
-    <link rel="apple-touch-icon" href="icon.png">
-
+    <meta name="theme-color" content="#bb2246">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        :root { --bg-color: #bb2246; --card-bg: #ffffff; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); transition: background 0.5s; overflow: hidden; }
         
-        :root {
-            --bg-color: #bb2246;
-            --card-bg: #ffffff;
-            --text-main: #292524;
-            --text-muted: #78716c;
-            --border-color: #f5f5f4;
-            --input-bg: #f5f5f4;
+        /* Sidebar de Notas */
+        #sidebar-notes {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(100%);
         }
-
-        .dark-card {
-            --card-bg: #1c1917;
-            --text-main: #f5f5f4;
-            --text-muted: #a8a29e;
-            --border-color: #292524;
-            --input-bg: #292524;
-        }
-
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-color);
-            transition: background-color 0.5s ease; 
-            overflow-x: hidden; 
-        }
+        #sidebar-notes.open { transform: translateX(0); }
         
-        button, input, div, section, main { transition: all 0.2s ease-in-out; }
-        
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
+        .timer-text { font-variant-numeric: tabular-nums; font-family: monospace; }
         .dyn-bg { background-color: var(--card-bg); }
-        .dyn-text { color: var(--text-main); }
-        .dyn-text-muted { color: var(--text-muted); }
-        .dyn-border { border-color: var(--border-color); }
-        .dyn-input { background-color: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); }
-
-        #editor[contenteditable="true"]:empty:before { 
-            content: attr(placeholder); 
-            color: #a8a29e; 
-            cursor: text; 
-        }
-        #editor h2 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-top: 0.5rem; margin-bottom: 0.5rem; }
-        #editor p { margin-bottom: 0.5rem; color: var(--text-main); }
-        #editor strike { color: var(--text-muted); text-decoration-thickness: 2px; }
-        
-        .timer-text { font-variant-numeric: tabular-nums; }
-        
-        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
     </style>
 </head>
-<body class="text-stone-800 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6" id="app-body">
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-    <header class="w-full max-w-xl flex justify-between items-center mb-6 text-white/90">
-        <h1 class="text-2xl font-bold flex items-center gap-2 drop-shadow-sm">
-            <i class="ph-fill ph-timer"></i> Pomodoro
-        </h1>
-        <button id="install-btn" class="hidden bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium shadow-sm flex items-center gap-2 transition-all">
-            <i class="ph ph-download-simple"></i> Instalar
-        </button>
+    <!-- Header -->
+    <header class="w-full max-w-xl flex justify-between items-center mb-6 text-white">
+        <h1 class="text-2xl font-bold flex items-center gap-2"><i class="ph-fill ph-timer"></i> Pomodoro</h1>
+        <button id="install-btn" class="hidden bg-white/20 px-4 py-2 rounded-full text-sm">Instalar</button>
     </header>
 
-    <main id="main-card" class="dyn-bg w-full max-w-xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col">
-        
-        <section class="p-8 pb-6 flex flex-col items-center">
-            <div class="flex gap-1 dyn-input p-1.5 rounded-full mb-8 w-full max-w-md justify-between border-none">
-                <button id="mode-pomodoro" class="flex-1 py-2 rounded-full text-sm font-bold dyn-bg shadow-sm dyn-text" onclick="setMode('pomodoro')">Pomodoro</button>
-                <button id="mode-shortBreak" class="flex-1 py-2 rounded-full text-sm font-medium dyn-text-muted hover:dyn-text" onclick="setMode('shortBreak')">Pausa Curta</button>
-                <button id="mode-longBreak" class="flex-1 py-2 rounded-full text-sm font-medium dyn-text-muted hover:dyn-text" onclick="setMode('longBreak')">Pausa Longa</button>
-            </div>
+    <!-- App Principal -->
+    <main class="dyn-bg w-full max-w-xl rounded-[2rem] shadow-2xl p-8 flex flex-col items-center relative z-10">
+        <!-- Modos -->
+        <div class="flex gap-2 bg-stone-100 p-1.5 rounded-full mb-8 w-full">
+            <button onclick="setMode('pomodoro')" id="btn-pomo" class="flex-1 py-2 rounded-full text-sm font-bold bg-white shadow-sm">Pomodoro</button>
+            <button onclick="setMode('shortBreak')" id="btn-short" class="flex-1 py-2 rounded-full text-sm font-medium text-stone-500">Pausa</button>
+        </div>
 
-            <div id="timer-display" class="text-8xl sm:text-[7rem] font-bold tracking-tighter dyn-text mb-8 font-mono timer-text drop-shadow-sm">
-                25:00
-            </div>
+        <!-- Timer -->
+        <div id="timer-display" class="text-[8rem] font-bold tracking-tighter mb-8 timer-text text-stone-800">25:00</div>
 
-            <div class="flex items-center gap-6">
-                <button id="btn-reset" class="dyn-text-muted hover:dyn-text w-12 h-12 rounded-full flex items-center justify-center text-3xl active:scale-95 transition-transform dyn-input border-none shadow-sm" onclick="resetTimer()" title="Reiniciar">
-                    <i class="ph ph-arrow-counter-clockwise"></i>
-                </button>
-                
-                <button id="btn-start" class="text-white w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-xl hover:scale-105 active:scale-95 transition-all" style="background-color: var(--bg-color);" onclick="toggleTimer()">
-                    <i id="play-icon" class="ph-fill ph-play ml-1"></i>
-                </button>
-                
-                <button id="btn-pip" class="dyn-text-muted hover:dyn-text w-12 h-12 rounded-full flex items-center justify-center text-3xl active:scale-95 transition-transform dyn-input border-none shadow-sm" onclick="togglePiP()" title="Miniplayer (Picture-in-Picture)">
-                    <i class="ph ph-picture-in-picture"></i>
-                </button>
-            </div>
-        </section>
-
-        <nav class="w-full flex border-y dyn-border" style="background-color: rgba(0,0,0,0.02);">
-            <button onclick="switchTab('audio')" id="tab-btn-audio" class="flex-1 py-3 text-sm font-semibold dyn-text border-b-2 flex justify-center items-center gap-2 dyn-bg transition-all" style="border-color: var(--bg-color);">
-                <i class="ph-fill ph-microphone text-lg"></i> Lembretes
+        <!-- Controlos -->
+        <div class="flex items-center gap-6 mb-8">
+            <button onclick="resetTimer()" class="text-stone-400 text-3xl hover:text-stone-600"><i class="ph ph-arrow-counter-clockwise"></i></button>
+            <button onclick="toggleTimer()" id="btn-start" class="w-20 h-20 rounded-full text-white text-4xl shadow-xl flex items-center justify-center" style="background-color: var(--bg-color);">
+                <i id="play-icon" class="ph-fill ph-play ml-1"></i>
             </button>
-            <button onclick="switchTab('notes')" id="tab-btn-notes" class="flex-1 py-3 text-sm font-medium dyn-text-muted border-b-2 border-transparent hover:dyn-text hover:bg-black/5 flex justify-center items-center gap-2 transition-all">
-                <i class="ph-fill ph-notebook text-lg"></i> Notas
+            <button onclick="togglePiP()" class="text-stone-400 text-3xl hover:text-stone-600"><i class="ph ph-picture-in-picture"></i></button>
+        </div>
+
+        <!-- Abas Inferiores -->
+        <nav class="w-full flex border-t border-stone-100 pt-6 gap-4">
+            <button onclick="switchTab('audio')" class="flex-1 flex flex-col items-center gap-1 text-stone-400 hover:text-stone-800">
+                <i class="ph-fill ph-microphone text-2xl"></i><span class="text-xs font-bold">Lembretes</span>
             </button>
-            <button onclick="switchTab('settings')" id="tab-btn-settings" class="flex-1 py-3 text-sm font-medium dyn-text-muted border-b-2 border-transparent hover:dyn-text hover:bg-black/5 flex justify-center items-center gap-2 transition-all">
-                <i class="ph-fill ph-gear text-lg"></i> Ajustes
+            <button onclick="openSidebar()" class="flex-1 flex flex-col items-center gap-1 text-stone-400 hover:text-stone-800">
+                <i class="ph-fill ph-notebook text-2xl"></i><span class="text-xs font-bold">Notas</span>
+            </button>
+            <button onclick="switchTab('settings')" class="flex-1 flex flex-col items-center gap-1 text-stone-400 hover:text-stone-800">
+                <i class="ph-fill ph-gear text-2xl"></i><span class="text-xs font-bold">Ajustes</span>
             </button>
         </nav>
 
-        <section class="p-6 flex-1 min-h-[300px] flex flex-col" style="background-color: rgba(0,0,0,0.02);">
-            
-            <div id="tab-audio" class="h-full flex flex-col">
-                <div class="flex gap-4 items-end mb-5">
-                    <div class="flex-1">
-                        <label class="block text-xs font-semibold dyn-text-muted uppercase tracking-wider mb-2">Novo Lembrete de Voz</label>
-                        <div class="flex flex-wrap gap-2 items-center">
-                            <button id="btn-record" class="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-xl hover:bg-stone-700 active:scale-95 font-medium text-sm transition-all shadow-sm" onclick="toggleRecording()">
-                                <i id="record-icon" class="ph-fill ph-microphone"></i> <span id="record-text">Gravar Áudio</span>
-                            </button>
-                            
-                            <div class="flex items-center gap-2 border-l dyn-border pl-2 ml-1">
-                                <div class="flex items-center dyn-bg dyn-border border rounded-xl px-2 h-9 focus-within:ring-2 focus-within:ring-stone-400 shadow-sm" title="Daqui a X minutos">
-                                    <input type="number" id="audio-time" class="w-12 text-center outline-none dyn-text text-sm font-medium bg-transparent border-none" min="1" value="5" oninput="document.getElementById('audio-datetime').value = ''">
-                                    <span class="dyn-text-muted text-sm pl-1 pr-1">min</span>
-                                </div>
-                                <span class="dyn-text-muted text-xs font-semibold uppercase">ou</span>
-                                <input type="datetime-local" id="audio-datetime" class="dyn-bg dyn-border border rounded-xl px-3 h-9 outline-none dyn-text text-sm font-medium focus:ring-2 focus:ring-stone-400 shadow-sm" title="Data e hora exatas" oninput="document.getElementById('audio-time').value = ''">
-                            </div>
-                        </div>
-                    </div>
+        <!-- Container de Ajustes (Aparece aqui) -->
+        <div id="tab-settings" class="hidden w-full mt-6 border-t pt-4">
+            <h4 class="text-xs font-bold text-stone-400 uppercase mb-4">Configurar Tempos</h4>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center bg-stone-50 p-3 rounded-xl">
+                    <span class="text-sm">Pomodoro (min)</span>
+                    <input type="number" id="in-pomo" class="w-16 bg-transparent text-right font-bold outline-none" value="25">
                 </div>
-                
-                <div class="flex-1 dyn-bg dyn-border border rounded-xl p-4 shadow-sm overflow-y-auto no-scrollbar max-h-[220px]">
-                    <h4 class="text-xs font-semibold dyn-text-muted uppercase tracking-wider mb-3">Agendamentos</h4>
-                    <ul id="reminders-list" class="space-y-3"></ul>
+                <div class="flex justify-between items-center bg-stone-50 p-3 rounded-xl">
+                    <span class="text-sm">Pausa (min)</span>
+                    <input type="number" id="in-short" class="w-16 bg-transparent text-right font-bold outline-none" value="5">
                 </div>
+                <button onclick="saveSettings()" id="btn-save" class="w-full py-3 rounded-xl text-white font-bold transition-all" style="background-color: var(--bg-color);">Guardar Tempos</button>
             </div>
-
-            <div id="tab-notes" class="h-full hidden flex-col">
-                <div class="p-2 dyn-border border rounded-t-xl flex flex-wrap gap-1.5 items-center dyn-bg shadow-sm z-10">
-                    <div class="flex gap-1 dyn-input p-1 rounded-lg border-none">
-                        <button onclick="formatText('formatBlock', 'P')" class="px-2 py-1 dyn-text-muted hover:dyn-text rounded text-xs font-medium">Normal</button>
-                        <button onclick="formatText('formatBlock', 'H2')" class="px-2 py-1 dyn-text rounded text-xs font-bold">Grande</button>
-                    </div>
-                    <div class="w-px h-5 dyn-border border-l my-auto"></div>
-                    <button onclick="formatText('bold')" class="w-7 h-7 flex items-center justify-center hover:bg-black/10 rounded dyn-text-muted"><i class="ph ph-text-b"></i></button>
-                    <button onclick="formatText('italic')" class="w-7 h-7 flex items-center justify-center hover:bg-black/10 rounded dyn-text-muted"><i class="ph ph-text-italic"></i></button>
-                    <button onclick="formatText('strikeThrough')" class="w-7 h-7 flex items-center justify-center hover:bg-black/10 rounded dyn-text-muted"><i class="ph ph-text-strikethrough"></i></button>
-                    <button onclick="formatText('insertUnorderedList')" class="w-7 h-7 flex items-center justify-center hover:bg-black/10 rounded dyn-text-muted"><i class="ph ph-list-bullets"></i></button>
-                    
-                    <div class="flex-1 flex justify-end">
-                        <label class="cursor-pointer text-xs font-bold px-3 py-1.5 dyn-input hover:brightness-95 border-none rounded-lg flex items-center gap-1.5">
-                            <i class="ph-bold ph-paperclip text-sm"></i> Anexar
-                            <input type="file" id="file-upload" class="hidden" accept=".pdf,.xlsx,.docx" multiple>
-                        </label>
-                    </div>
-                </div>
-                <div id="editor" class="flex-1 p-4 dyn-border border-x border-b rounded-b-xl outline-none overflow-y-auto no-scrollbar dyn-text leading-relaxed dyn-bg shadow-inner max-h-[250px]" contenteditable="true" placeholder="Registe anotações ou anexe ficheiros aqui..."></div>
-            </div>
-
-            <div id="tab-settings" class="h-full hidden flex-col">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                    <div>
-                        <h4 class="text-xs font-semibold dyn-text-muted uppercase tracking-wider mb-4 flex items-center gap-1"><i class="ph-fill ph-palette"></i> Aspeto Visual</h4>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium dyn-text mb-2">Cor de Fundo</label>
-                            <div class="flex flex-wrap gap-2">
-                                <button onclick="changeTheme('#bb2246')" class="w-8 h-8 rounded-full bg-[#bb2246] shadow-md hover:scale-110 transition-all"></button>
-                                <button onclick="changeTheme('#f59e0b')" class="w-8 h-8 rounded-full bg-[#f59e0b] shadow-md hover:scale-110 transition-all"></button>
-                                <button onclick="changeTheme('#10b981')" class="w-8 h-8 rounded-full bg-[#10b981] shadow-md hover:scale-110 transition-all"></button>
-                                <button onclick="changeTheme('#4338ca')" class="w-8 h-8 rounded-full bg-[#4338ca] shadow-md hover:scale-110 transition-all"></button>
-                                <div class="relative w-8 h-8 rounded-full overflow-hidden shadow-md border-2 border-dashed dyn-border flex items-center justify-center dyn-bg">
-                                    <input type="color" id="custom-color-picker" class="absolute inset-0 cursor-pointer opacity-0" onchange="changeTheme(this.value)">
-                                    <i class="ph ph-plus dyn-text-muted text-xs pointer-events-none"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium dyn-text mb-2">Tema do Quadro</label>
-                            <div class="flex gap-2 p-1 dyn-input rounded-xl border-none">
-                                <button id="btn-theme-light" onclick="setCardTheme('light')" class="flex-1 py-1.5 rounded-lg text-sm font-semibold shadow-sm bg-white text-stone-800 flex justify-center items-center gap-1 transition-all">
-                                    <i class="ph-fill ph-sun"></i> Claro
-                                </button>
-                                <button id="btn-theme-dark" onclick="setCardTheme('dark')" class="flex-1 py-1.5 rounded-lg text-sm font-medium text-stone-500 hover:text-stone-800 flex justify-center items-center gap-1 transition-all">
-                                    <i class="ph-fill ph-moon"></i> Escuro
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h4 class="text-xs font-semibold dyn-text-muted uppercase tracking-wider mb-4 flex items-center gap-1"><i class="ph-fill ph-clock"></i> Tempos (min)</h4>
-                        <div class="space-y-2">
-                            <input type="number" id="input-pomodoro" class="w-full dyn-input rounded-xl px-4 py-2 text-sm outline-none mb-2" placeholder="Pomodoro">
-                            <input type="number" id="input-short" class="w-full dyn-input rounded-xl px-4 py-2 text-sm outline-none mb-2" placeholder="Pausa Curta">
-                            <input type="number" id="input-long" class="w-full dyn-input rounded-xl px-4 py-2 text-sm outline-none mb-2" placeholder="Pausa Longa">
-                            <button id="save-settings" class="w-full py-2.5 rounded-xl font-bold text-white shadow-md active:scale-95 transition-all text-sm" style="background-color: var(--bg-color);">
-                                Guardar Tempos
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        </div>
     </main>
 
-    <div id="reminder-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md hidden z-[70] flex items-center justify-center opacity-0 transition-opacity duration-300 p-4">
-        <div id="reminder-content" class="dyn-bg rounded-[2rem] p-8 w-full max-w-sm scale-95 transition-transform duration-300 shadow-2xl text-center border-t-8" style="border-color: var(--bg-color);">
-            <div class="w-16 h-16 rounded-full dyn-input mx-auto flex items-center justify-center mb-4 text-3xl animate-bounce border-none" style="color: var(--bg-color);">
-                <i class="ph-fill ph-bell-ringing"></i>
-            </div>
-            <h3 class="text-2xl font-bold dyn-text mb-2">Lembrete de Áudio!</h3>
-            <audio id="reminder-audio-player" controls class="w-full mb-6"></audio>
-            <button onclick="closeReminderModal()" class="w-full py-3 rounded-xl font-bold text-white shadow-lg active:scale-95 transition-all" style="background-color: var(--bg-color);">
-                Compreendido
+    <!-- SIDEBAR DE NOTAS (NOVO LAYOUT) -->
+    <aside id="sidebar-notes" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-[100] p-6 flex flex-col">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold flex items-center gap-2"><i class="ph ph-notebook"></i> Minhas Notas</h2>
+            <button onclick="closeSidebar()" class="text-2xl text-stone-400 hover:text-stone-800"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="flex gap-2 mb-4 border-b pb-2">
+            <button onclick="format('bold')" class="p-2 hover:bg-stone-100 rounded"><b>B</b></button>
+            <button onclick="format('italic')" class="p-2 hover:bg-stone-100 rounded"><i>I</i></button>
+            <button class="p-2 hover:bg-stone-100 rounded ml-auto text-sm flex items-center gap-1 bg-stone-50">
+                <i class="ph ph-paperclip"></i> Anexar
             </button>
         </div>
-    </div>
-
-    <canvas id="pip-canvas" width="400" height="400" class="hidden"></canvas>
-    <video id="pip-video" class="hidden" muted autoplay playsinline></video>
+        <div id="editor" contenteditable="true" class="flex-1 outline-none text-stone-700 leading-relaxed overflow-y-auto" placeholder="Comece a escrever..."></div>
+    </aside>
 
     <script>
-        /* --- 1. PWA CORE --- */
-        let deferredPrompt;
-        const installBtn = document.getElementById('install-btn');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBtn.classList.remove('hidden');
-        });
-
-        installBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                installBtn.classList.add('hidden');
-            }
-        });
-
-        // Registro simplificado e direto para evitar erros de path no GitHub
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('SW registrado!', reg))
-                    .catch(err => console.log('Erro no SW:', err));
-            });
-        }
-
-        /* --- 2. TEMAS --- */
-        let currentTheme = localStorage.getItem('pomodoro_theme') || '#bb2246';
-        let currentCardTheme = localStorage.getItem('pomodoro_card_theme') || 'light';
-        const mainCard = document.getElementById('main-card');
-
-        function changeTheme(color) {
-            currentTheme = color;
-            document.documentElement.style.setProperty('--bg-color', color);
-            document.getElementById('meta-theme-color').setAttribute('content', color);
-            localStorage.setItem('pomodoro_theme', color);
-            document.getElementById('custom-color-picker').value = color;
-        }
-
-        function setCardTheme(theme) {
-            currentCardTheme = theme;
-            localStorage.setItem('pomodoro_card_theme', theme);
-            if (theme === 'dark') mainCard.classList.add('dark-card');
-            else mainCard.classList.remove('dark-card');
-        }
-
-        /* --- 3. TIMER LOGIC --- */
-        let MODES = JSON.parse(localStorage.getItem('pomodoro_settings')) || { pomodoro: 25, shortBreak: 5, longBreak: 15 };
-        let currentMode = 'pomodoro';
+        // --- PERSISTÊNCIA E CONFIGURAÇÕES ---
+        let MODES = JSON.parse(localStorage.getItem('pomo_cfg')) || { pomodoro: 25, shortBreak: 5 };
         let timeLeft = MODES.pomodoro * 60;
         let timerId = null;
         let isRunning = false;
 
+        function saveSettings() {
+            MODES.pomodoro = parseInt(document.getElementById('in-pomo').value);
+            MODES.shortBreak = parseInt(document.getElementById('in-short').value);
+            localStorage.setItem('pomo_cfg', JSON.stringify(MODES));
+            
+            const btn = document.getElementById('btn-save');
+            btn.style.backgroundColor = "#10b981"; // Verde sucesso
+            btn.textContent = "Guardado!";
+            setTimeout(() => { 
+                btn.style.backgroundColor = "var(--bg-color)"; 
+                btn.textContent = "Guardar Tempos";
+            }, 2000);
+            
+            resetTimer(); // Aplica o novo tempo imediatamente
+        }
+
         function updateDisplay() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            const text = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            document.getElementById('timer-display').textContent = text;
-            document.title = `${text} - Pomodoro`;
+            const min = Math.floor(timeLeft / 60);
+            const sec = timeLeft % 60;
+            const timeStr = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+            document.getElementById('timer-display').textContent = timeStr;
+            document.title = timeStr + " - Pomodoro";
         }
 
         function toggleTimer() {
             if (isRunning) {
                 clearInterval(timerId);
-                document.getElementById('play-icon').classList.replace('ph-pause', 'ph-play');
+                document.getElementById('play-icon').className = "ph-fill ph-play ml-1";
             } else {
                 timerId = setInterval(() => {
                     timeLeft--;
                     updateDisplay();
-                    if (timeLeft <= 0) {
-                        clearInterval(timerId);
-                        alert("Tempo esgotado!");
-                        resetTimer();
-                    }
+                    if (timeLeft <= 0) { clearInterval(timerId); alert("Acabou!"); }
                 }, 1000);
-                document.getElementById('play-icon').classList.replace('ph-play', 'ph-pause');
+                document.getElementById('play-icon').className = "ph-fill ph-pause";
             }
             isRunning = !isRunning;
         }
@@ -319,31 +147,24 @@
         function resetTimer() {
             clearInterval(timerId);
             isRunning = false;
-            timeLeft = MODES[currentMode] * 60;
+            timeLeft = MODES.pomodoro * 60;
             updateDisplay();
-            document.getElementById('play-icon').classList.replace('ph-pause', 'ph-play');
+            document.getElementById('play-icon').className = "ph-fill ph-play ml-1";
         }
 
-        function setMode(mode) {
-            currentMode = mode;
-            resetTimer();
+        // --- SIDEBAR E ABAS ---
+        function openSidebar() { document.getElementById('sidebar-notes').classList.add('open'); }
+        function closeSidebar() { document.getElementById('sidebar-notes').classList.remove('open'); }
+        
+        function switchTab(id) {
+            const tab = document.getElementById('tab-settings');
+            if (id === 'settings') tab.classList.toggle('hidden');
+            else tab.classList.add('hidden');
         }
 
-        function switchTab(tabId) {
-            ['audio', 'notes', 'settings'].forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.getElementById(`tab-btn-${t}`).classList.remove('border-b-2');
-                document.getElementById(`tab-btn-${t}`).style.borderColor = 'transparent';
-            });
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
-            activeBtn.classList.add('border-b-2');
-            activeBtn.style.borderColor = currentTheme;
-        }
-
-        // --- INIT ---
-        changeTheme(currentTheme);
-        setCardTheme(currentCardTheme);
+        // --- INICIALIZAÇÃO ---
+        document.getElementById('in-pomo').value = MODES.pomodoro;
+        document.getElementById('in-short').value = MODES.shortBreak;
         updateDisplay();
     </script>
 </body>
