@@ -5,27 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pomodoro Minimalista</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#bb2246">
+    <meta name="theme-color" content="#bb2246" id="meta-theme-color">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        :root { --bg-color: #bb2246; --card-bg: #ffffff; }
+        :root { --bg-color: #bb2246; --card-bg: #ffffff; --text-color: #292524; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); transition: background 0.5s; overflow: hidden; }
         #sidebar-notes { transition: transform 0.3s ease-in-out; transform: translateX(100%); }
         #sidebar-notes.open { transform: translateX(0); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         #editor[contenteditable="true"]:empty:before { content: attr(placeholder); color: #a8a29e; pointer-events: none; }
+        .timer-text { font-variant-numeric: tabular-nums; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4">
+<body class="min-h-screen flex flex-col items-center justify-center p-4" id="app-body">
 
     <header class="w-full max-w-xl flex justify-between items-center mb-6 text-white">
         <h1 class="text-2xl font-bold flex items-center gap-2"><i class="ph-fill ph-timer"></i> Pomodoro</h1>
         <button id="install-btn" class="hidden bg-white/20 px-4 py-2 rounded-full text-sm">Instalar</button>
     </header>
 
-    <main class="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl p-8 flex flex-col items-center relative z-10">
+    <main id="main-card" class="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl p-8 flex flex-col items-center relative z-10 transition-colors duration-500">
         <!-- Seleção de Modos -->
         <div class="flex gap-1 bg-stone-100 p-1.5 rounded-full mb-8 w-full relative">
             <button onclick="setMode('pomodoro')" id="btn-pomo" class="flex-1 py-2 rounded-full text-sm font-bold bg-white shadow-sm transition-all">Foco</button>
@@ -33,14 +34,14 @@
             <button onclick="setMode('longBreak')" id="btn-long" class="flex-1 py-2 rounded-full text-sm font-medium text-stone-500 hover:text-stone-800 transition-all">Pausa Longa</button>
         </div>
 
-        <div id="timer-display" class="text-[8rem] font-bold tracking-tighter mb-8 text-stone-800 tabular-nums">25:00</div>
+        <div id="timer-display" class="text-[8rem] font-bold tracking-tighter mb-8 text-stone-800 timer-text">25:00</div>
 
         <div class="flex items-center gap-6 mb-8">
             <button onclick="resetTimer()" class="text-stone-400 text-3xl hover:text-stone-600"><i class="ph ph-arrow-counter-clockwise"></i></button>
             <button onclick="toggleTimer()" id="btn-start" class="w-20 h-20 rounded-full text-white text-4xl shadow-xl flex items-center justify-center transition-transform active:scale-95" style="background-color: var(--bg-color);">
                 <i id="play-icon" class="ph-fill ph-play ml-1"></i>
             </button>
-            <button onclick="togglePiP()" class="text-stone-400 text-3xl hover:text-stone-600"><i class="ph ph-picture-in-picture"></i></button>
+            <button onclick="togglePiP()" class="text-stone-400 text-3xl hover:text-stone-600"><i class="ph ph-browsers"></i></button>
         </div>
 
         <nav class="w-full flex border-t border-stone-100 pt-6 gap-4">
@@ -55,25 +56,43 @@
             </button>
         </nav>
 
-        <div id="tab-settings" class="hidden w-full mt-6 border-t pt-4 space-y-3">
-            <div class="flex justify-between items-center bg-stone-50 p-3 rounded-xl"><span class="text-sm">Foco</span><input type="number" id="in-pomo" class="w-16 bg-transparent text-right font-bold outline-none" value="25"></div>
-            <div class="flex justify-between items-center bg-stone-50 p-3 rounded-xl"><span class="text-sm">Pausa Curta</span><input type="number" id="in-short" class="w-16 bg-transparent text-right font-bold outline-none" value="5"></div>
-            <div class="flex justify-between items-center bg-stone-50 p-3 rounded-xl"><span class="text-sm">Pausa Longa</span><input type="number" id="in-long" class="w-16 bg-transparent text-right font-bold outline-none" value="15"></div>
-            <button onclick="saveSettings()" id="btn-save" class="w-full py-3 rounded-xl text-white font-bold" style="background-color: var(--bg-color);">Guardar Tempos</button>
+        <!-- ABA DE AJUSTES CORRIGIDA (COM CORES) -->
+        <div id="tab-settings" class="hidden w-full mt-6 border-t pt-4 space-y-4">
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="space-y-2">
+                    <label class="text-[10px] uppercase font-bold text-stone-400">Tempos (min)</label>
+                    <input type="number" id="in-pomo" class="w-full bg-stone-50 p-2 rounded-lg text-sm font-bold outline-none" placeholder="Foco" value="25">
+                    <input type="number" id="in-short" class="w-full bg-stone-50 p-2 rounded-lg text-sm font-bold outline-none" placeholder="Pausa" value="5">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] uppercase font-bold text-stone-400">Cores</label>
+                    <div class="flex items-center justify-between bg-stone-50 p-1.5 rounded-lg">
+                        <span class="text-[11px]">Fundo</span>
+                        <input type="color" id="color-bg" class="w-6 h-6 border-0 cursor-pointer" value="#bb2246">
+                    </div>
+                    <div class="flex items-center justify-between bg-stone-50 p-1.5 rounded-lg">
+                        <span class="text-[11px]">Cartão</span>
+                        <input type="color" id="color-card" class="w-6 h-6 border-0 cursor-pointer" value="#ffffff">
+                    </div>
+                </div>
+            </div>
+            <button onclick="saveSettings()" id="btn-save" class="w-full py-3 rounded-xl text-white font-bold" style="background-color: var(--bg-color);">Guardar Configurações</button>
         </div>
     </main>
 
-    <!-- SIDEBAR DE NOTAS -->
+    <!-- SIDEBAR DE NOTAS CORRIGIDA -->
     <aside id="sidebar-notes" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-[100] p-6 flex flex-col">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-bold flex items-center gap-2"><i class="ph ph-notebook"></i> Notas</h2>
             <button onclick="closeSidebar()" class="text-2xl text-stone-400"><i class="ph ph-x"></i></button>
         </div>
         <div class="flex gap-2 mb-4 border-b pb-2 items-center flex-wrap">
-            <button onclick="format('bold')" class="p-2 hover:bg-stone-100 rounded" title="Negrito"><i class="ph ph-text-b"></i></button>
-            <button onclick="format('strikeThrough')" class="p-2 hover:bg-stone-100 rounded" title="Taxado"><i class="ph ph-text-strikethrough"></i></button>
-            <button onclick="format('hiliteColor', '#fef08a')" class="p-2 hover:bg-stone-100 rounded text-yellow-600" title="Grifar"><i class="ph ph-highlighter"></i></button>
-            <select onchange="format('fontSize', this.value)" class="text-xs border rounded p-1 outline-none">
+            <button onmousedown="event.preventDefault();" onclick="format('bold')" class="p-2 hover:bg-stone-100 rounded" title="Negrito"><i class="ph ph-text-b"></i></button>
+            <button onmousedown="event.preventDefault();" onclick="format('strikeThrough')" class="p-2 hover:bg-stone-100 rounded" title="Taxado"><i class="ph ph-text-strikethrough"></i></button>
+            <!-- BOTÃO DE GRIFAR CORRIGIDO -->
+            <button onmousedown="event.preventDefault();" onclick="format('hiliteColor', '#fef08a')" class="p-2 hover:bg-stone-100 rounded text-yellow-600" title="Grifar"><i class="ph ph-highlighter"></i></button>
+            
+            <select onchange="format('fontSize', this.value)" class="text-xs border rounded p-1 outline-none ml-2">
                 <option value="3">Padrão</option><option value="5">Grande</option><option value="7">Enorme</option>
             </select>
             <button onclick="document.getElementById('file-input').click()" class="p-2 hover:bg-stone-100 rounded ml-auto bg-stone-50 text-xs flex items-center gap-1">
@@ -81,32 +100,63 @@
             </button>
             <input type="file" id="file-input" class="hidden" multiple onchange="handleFiles(this.files)">
         </div>
-        <div id="editor" contenteditable="true" class="flex-1 outline-none text-stone-700 leading-relaxed overflow-y-auto" placeholder="Escreva aqui..."></div>
+        <div id="editor" contenteditable="true" class="flex-1 outline-none text-stone-700 leading-relaxed overflow-y-auto text-lg" placeholder="Escreva aqui..."></div>
         <div id="attachments-area" class="mt-4 space-y-2 max-h-32 overflow-y-auto no-scrollbar"></div>
     </aside>
 
-    <!-- MODAL DE VOZ -->
+    <!-- MODAL DE VOZ CORRIGIDO (COM AGENDAMENTO E LISTA) -->
     <div id="voice-modal" class="fixed inset-0 bg-black/50 hidden z-[110] flex items-center justify-center p-4">
-        <div class="bg-white p-8 rounded-[2rem] w-full max-w-sm text-center">
-            <h3 class="text-xl font-bold mb-4">Lembrete de Voz</h3>
-            <button id="record-btn" onclick="toggleRecording()" class="w-20 h-20 rounded-full bg-purple-600 text-white text-3xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+        <div class="bg-white p-6 rounded-[2.5rem] w-full max-w-sm flex flex-col max-h-[90vh]">
+            <h3 class="text-xl font-bold mb-4 text-center">Lembrete de Voz</h3>
+            
+            <!-- Campo de Agendamento -->
+            <div class="mb-4">
+                <label class="text-[10px] uppercase font-bold text-stone-400 block mb-1">Avisar-me em (minutos):</label>
+                <input type="number" id="reminder-min" class="w-full bg-stone-50 p-3 rounded-xl font-bold outline-none text-center" value="5" min="1">
+            </div>
+
+            <button id="record-btn" onclick="toggleRecording()" class="w-16 h-16 rounded-full bg-purple-600 text-white text-2xl mx-auto mb-2 flex items-center justify-center shadow-lg transition-all">
                 <i id="rec-icon" class="ph-fill ph-microphone"></i>
             </button>
-            <p id="rec-status" class="text-sm text-stone-500 mb-6">Clique para gravar</p>
-            <div class="flex gap-2">
-                <button onclick="closeVoiceModal()" class="flex-1 py-3 bg-stone-100 rounded-xl font-bold">Cancelar</button>
-                <button id="save-rec" disabled onclick="saveVoiceReminder()" class="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold opacity-50">Agendar</button>
+            <p id="rec-status" class="text-[11px] text-stone-500 mb-4 text-center font-medium">Clique para gravar</p>
+            
+            <div class="flex gap-2 mb-6">
+                <button onclick="closeVoiceModal()" class="flex-1 py-3 bg-stone-100 rounded-xl font-bold text-sm">Sair</button>
+                <button id="save-rec" disabled onclick="saveVoiceReminder()" class="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold text-sm opacity-50">Agendar</button>
+            </div>
+
+            <!-- REGISTRO DE LEMBRETES AGENDADOS -->
+            <div class="border-t pt-4 overflow-y-auto no-scrollbar">
+                <label class="text-[10px] uppercase font-bold text-stone-400 block mb-2">Agendamentos Ativos:</label>
+                <ul id="reminder-registry" class="space-y-2 text-xs">
+                    <!-- Lista aparece aqui -->
+                </ul>
             </div>
         </div>
     </div>
 
+    <!-- CANVAS PARA O MINI PLAYER -->
     <canvas id="pip-canvas" width="300" height="300" class="hidden"></canvas>
     <video id="pip-video" class="hidden" muted autoplay playsinline></video>
 
     <script>
+        // --- DADOS E PERSISTÊNCIA ---
         let MODES = JSON.parse(localStorage.getItem('pomo_cfg')) || { pomodoro: 25, shortBreak: 5, longBreak: 15 };
+        let COLORS = JSON.parse(localStorage.getItem('pomo_colors')) || { bg: '#bb2246', card: '#ffffff' };
+        let reminders = JSON.parse(localStorage.getItem('pomo_reminders')) || [];
+        
         let currentMode = 'pomodoro', timeLeft = MODES.pomodoro * 60, timerId = null, isRunning = false;
         let mediaRecorder, chunks = [], audioBase64 = null;
+
+        // --- INICIALIZAÇÃO DE CORES ---
+        function applyColors() {
+            document.documentElement.style.setProperty('--bg-color', COLORS.bg);
+            document.getElementById('app-body').style.backgroundColor = COLORS.bg;
+            document.getElementById('main-card').style.backgroundColor = COLORS.card;
+            document.getElementById('meta-theme-color').setAttribute('content', COLORS.bg);
+            document.getElementById('color-bg').value = COLORS.bg;
+            document.getElementById('color-card').value = COLORS.card;
+        }
 
         // --- TIMER CORE ---
         function updateDisplay() {
@@ -114,26 +164,24 @@
             const str = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
             document.getElementById('timer-display').textContent = str;
             document.title = str + " - Pomodoro";
-            drawPiP();
+            drawPiP(); 
         }
 
         function setMode(mode) {
-            currentMode = mode;
-            resetTimer();
-            const btns = { pomodoro: 'btn-pomo', shortBreak: 'btn-short', longBreak: 'btn-long' };
-            Object.keys(btns).forEach(m => {
-                const b = document.getElementById(btns[m]);
-                if(m === mode) { b.className = "flex-1 py-2 rounded-full text-sm font-bold bg-white shadow-sm"; }
-                else { b.className = "flex-1 py-2 rounded-full text-sm font-medium text-stone-500 hover:text-stone-800"; }
-            });
-            timeLeft = MODES[mode] * 60;
-            updateDisplay();
+            currentMode = mode; resetTimer();
+            ['btn-pomo', 'btn-short', 'btn-long'].forEach(id => document.getElementById(id).className = "flex-1 py-2 rounded-full text-sm font-medium text-stone-500 transition-all");
+            const activeId = mode === 'pomodoro' ? 'btn-pomo' : (mode === 'shortBreak' ? 'btn-short' : 'btn-long');
+            document.getElementById(activeId).className = "flex-1 py-2 rounded-full text-sm font-bold bg-white shadow-sm transition-all";
+            timeLeft = MODES[mode] * 60; updateDisplay();
         }
 
         function toggleTimer() {
             if(isRunning) { clearInterval(timerId); document.getElementById('play-icon').className = "ph-fill ph-play ml-1"; }
             else { 
-                timerId = setInterval(() => { timeLeft--; updateDisplay(); if(timeLeft<=0){ clearInterval(timerId); alert("Tempo Esgotado!"); resetTimer(); }}, 1000);
+                timerId = setInterval(() => { 
+                    timeLeft--; updateDisplay(); 
+                    if(timeLeft <= 0){ clearInterval(timerId); alert("Tempo Esgotado!"); resetTimer(); }
+                }, 1000);
                 document.getElementById('play-icon').className = "ph-fill ph-pause";
             }
             isRunning = !isRunning;
@@ -144,35 +192,40 @@
         function saveSettings() {
             MODES.pomodoro = parseInt(document.getElementById('in-pomo').value);
             MODES.shortBreak = parseInt(document.getElementById('in-short').value);
-            MODES.longBreak = parseInt(document.getElementById('in-long').value);
+            COLORS.bg = document.getElementById('color-bg').value;
+            COLORS.card = document.getElementById('color-card').value;
+            
             localStorage.setItem('pomo_cfg', JSON.stringify(MODES));
+            localStorage.setItem('pomo_colors', JSON.stringify(COLORS));
+            
+            applyColors();
             const b = document.getElementById('btn-save'); b.textContent = "Guardado!"; b.style.backgroundColor = "#10b981";
-            setTimeout(() => { b.textContent = "Guardar Tempos"; b.style.backgroundColor = "var(--bg-color)"; }, 2000);
+            setTimeout(() => { b.textContent = "Guardar Configurações"; b.style.backgroundColor = COLORS.bg; }, 2000);
             resetTimer();
         }
 
-        // --- SIDEBAR & EDITOR ---
+        // --- SIDEBAR E NOTAS ---
         function openSidebar() { document.getElementById('sidebar-notes').classList.add('open'); }
         function closeSidebar() { document.getElementById('sidebar-notes').classList.remove('open'); }
-        function format(cmd, val) { document.execCommand(cmd, false, val); document.getElementById('editor').focus(); }
-        
+        function format(cmd, val) { 
+            document.execCommand(cmd, false, val); 
+            if(cmd === 'hiliteColor') document.execCommand('backColor', false, val); // Fallback
+            document.getElementById('editor').focus(); 
+        }
+
         function handleFiles(files) {
             Array.from(files).forEach(f => {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const div = document.createElement('div');
-                    div.className = "flex items-center justify-between p-2 bg-stone-50 border rounded-lg text-xs";
-                    div.innerHTML = `<span class="truncate w-32 font-medium">${f.name}</span><button onclick="this.parentElement.remove()" class="text-red-500"><i class="ph ph-trash"></i></button>`;
-                    document.getElementById('attachments-area').appendChild(div);
-                };
-                reader.readAsDataURL(f);
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-2 bg-stone-50 border rounded-lg text-[11px]";
+                div.innerHTML = `<span class="truncate w-32 font-bold text-stone-600">${f.name}</span><button onclick="this.parentElement.remove()" class="text-red-500"><i class="ph ph-trash"></i></button>`;
+                document.getElementById('attachments-area').appendChild(div);
             });
         }
 
-        // --- VOZ ---
-        function openVoiceModal() { document.getElementById('voice-modal').classList.remove('hidden'); }
+        // --- VOZ E LEMBRETES CORRIGIDOS ---
+        function openVoiceModal() { renderReminderRegistry(); document.getElementById('voice-modal').classList.remove('hidden'); }
         function closeVoiceModal() { document.getElementById('voice-modal').classList.add('hidden'); }
-        
+
         async function toggleRecording() {
             if(!mediaRecorder || mediaRecorder.state === 'inactive') {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -180,44 +233,89 @@
                 chunks = [];
                 mediaRecorder.ondataavailable = e => chunks.push(e.data);
                 mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'audio/ogg; codecs=opus' });
+                    const blob = new Blob(chunks, { type: 'audio/webm' });
                     const reader = new FileReader();
                     reader.readAsDataURL(blob);
                     reader.onloadend = () => { audioBase64 = reader.result; document.getElementById('save-rec').disabled = false; document.getElementById('save-rec').classList.remove('opacity-50'); };
                 };
                 mediaRecorder.start();
                 document.getElementById('rec-icon').className = "ph-fill ph-stop";
-                document.getElementById('rec-status').textContent = "Gravando...";
+                document.getElementById('rec-icon').parentElement.classList.add('bg-red-500', 'animate-pulse');
+                document.getElementById('rec-status').textContent = "A gravar áudio...";
             } else {
                 mediaRecorder.stop();
                 document.getElementById('rec-icon').className = "ph-fill ph-microphone";
-                document.getElementById('rec-status').textContent = "Pronto para agendar!";
+                document.getElementById('rec-icon').parentElement.classList.remove('bg-red-500', 'animate-pulse');
+                document.getElementById('rec-status').textContent = "Gravação concluída!";
+                mediaRecorder.stream.getTracks().forEach(t => t.stop());
             }
         }
 
         function saveVoiceReminder() {
-            alert("Lembrete agendado com sucesso!");
-            closeVoiceModal();
+            const minutes = parseInt(document.getElementById('reminder-min').value) || 5;
+            const triggerAt = Date.now() + (minutes * 60000);
+            
+            const newReminder = { id: Date.now(), audio: audioBase64, time: triggerAt, label: `Em ${minutes} min` };
+            reminders.push(newReminder);
+            localStorage.setItem('pomo_reminders', JSON.stringify(reminders));
+            
+            audioBase64 = null;
+            document.getElementById('save-rec').disabled = true;
+            document.getElementById('save-rec').classList.add('opacity-50');
+            document.getElementById('rec-status').textContent = "Lembrete Agendado!";
+            renderReminderRegistry();
         }
 
-        // --- PIP (MINIPLAYER) ---
+        function renderReminderRegistry() {
+            const list = document.getElementById('reminder-registry');
+            list.innerHTML = reminders.length ? "" : "<li class='text-stone-300 italic'>Nenhum agendamento ativo.</li>";
+            reminders.forEach(rem => {
+                const li = document.createElement('li');
+                li.className = "flex justify-between items-center bg-stone-50 p-2 rounded-lg";
+                const timeStr = new Date(rem.time).toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'});
+                li.innerHTML = `<span><i class="ph ph-bell"></i> ${timeStr} (${rem.label})</span><button onclick="deleteReminder(${rem.id})" class="text-red-400"><i class="ph ph-trash"></i></button>`;
+                list.appendChild(li);
+            });
+        }
+
+        function deleteReminder(id) { reminders = reminders.filter(r => r.id !== id); localStorage.setItem('pomo_reminders', JSON.stringify(reminders)); renderReminderRegistry(); }
+
+        // Verificador de alarmes (5s)
+        setInterval(() => {
+            const now = Date.now();
+            reminders.forEach(rem => {
+                if(now >= rem.time) {
+                    const audio = new Audio(rem.audio);
+                    audio.play();
+                    alert("Lembrete de Voz Ativado!");
+                    deleteReminder(rem.id);
+                }
+            });
+        }, 5000);
+
+        // --- PIP (MINI PLAYER) CORRIGIDO ---
         const canvas = document.getElementById('pip-canvas'), ctx = canvas.getContext('2d'), video = document.getElementById('pip-video');
         function drawPiP() {
-            ctx.fillStyle = "#bb2246"; ctx.fillRect(0,0,300,300);
+            ctx.fillStyle = COLORS.bg; ctx.fillRect(0,0,300,300);
             ctx.fillStyle = "white"; ctx.font = "bold 80px Inter"; ctx.textAlign = "center";
             ctx.fillText(document.getElementById('timer-display').textContent, 150, 165);
         }
         async function togglePiP() {
-            if(document.pictureInPictureElement) await document.exitPictureInPicture();
-            else {
-                video.srcObject = canvas.captureStream();
-                await video.play();
-                await video.requestPictureInPicture();
-            }
+            try {
+                if(document.pictureInPictureElement) await document.exitPictureInPicture();
+                else {
+                    const stream = canvas.captureStream();
+                    video.srcObject = stream;
+                    await video.play();
+                    await video.requestPictureInPicture();
+                }
+            } catch(e) { alert("O seu navegador não suporta Mini Player (PiP)."); }
         }
 
         function switchTab(id) { document.getElementById('tab-settings').classList.toggle('hidden'); }
 
+        // --- INIT ---
+        applyColors();
         updateDisplay();
     </script>
 </body>
