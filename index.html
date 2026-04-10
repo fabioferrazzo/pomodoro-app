@@ -6,10 +6,11 @@
     <title>Pomodoro Minimalista</title>
     
     <!-- Link para o Manifest do PWA -->
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#bb2246" id="meta-theme-color">
-    <!-- Ícone para iOS -->
-    <link rel="apple-touch-icon" href="icon.PNG">
+    
+    <!-- Ícone para iOS (Ajustado para minúsculo conforme seu arquivo no GitHub) -->
+    <link rel="apple-touch-icon" href="icon.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -20,18 +21,17 @@
         :root {
             --bg-color: #bb2246;
             --card-bg: #ffffff;
-            --text-main: #292524; /* stone-800 */
-            --text-muted: #78716c; /* stone-500 */
-            --border-color: #f5f5f4; /* stone-100 */
+            --text-main: #292524;
+            --text-muted: #78716c;
+            --border-color: #f5f5f4;
             --input-bg: #f5f5f4;
         }
 
-        /* Classe para o tema escuro do cartão */
         .dark-card {
-            --card-bg: #1c1917; /* stone-900 */
-            --text-main: #f5f5f4; /* stone-100 */
-            --text-muted: #a8a29e; /* stone-400 */
-            --border-color: #292524; /* stone-800 */
+            --card-bg: #1c1917;
+            --text-main: #f5f5f4;
+            --text-muted: #a8a29e;
+            --border-color: #292524;
             --input-bg: #292524;
         }
 
@@ -44,23 +44,15 @@
         
         button, input, div, section, main { transition: all 0.2s ease-in-out; }
         
-        /* Oculta scrollbar mas permite scroll */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Fallback CSS para botões caso o Tailwind falhe */
-        .btn-native-fallback {
-            border: none; outline: none; cursor: pointer;
-        }
-
-        /* Classes dinâmicas baseadas nas variáveis CSS */
         .dyn-bg { background-color: var(--card-bg); }
         .dyn-text { color: var(--text-main); }
         .dyn-text-muted { color: var(--text-muted); }
         .dyn-border { border-color: var(--border-color); }
         .dyn-input { background-color: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); }
 
-        /* Estilização do Editor e Formatações Avançadas */
         #editor[contenteditable="true"]:empty:before { 
             content: attr(placeholder); 
             color: #a8a29e; 
@@ -70,17 +62,14 @@
         #editor p { margin-bottom: 0.5rem; color: var(--text-main); }
         #editor strike { color: var(--text-muted); text-decoration-thickness: 2px; }
         
-        /* Animação do cronómetro */
         .timer-text { font-variant-numeric: tabular-nums; }
         
-        /* Oculta o seletor nativo de cor */
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
     </style>
 </head>
 <body class="text-stone-800 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6" id="app-body">
 
-    <!-- Header Limpo -->
     <header class="w-full max-w-xl flex justify-between items-center mb-6 text-white/90">
         <h1 class="text-2xl font-bold flex items-center gap-2 drop-shadow-sm">
             <i class="ph-fill ph-timer"></i> Pomodoro
@@ -90,30 +79,25 @@
         </button>
     </header>
 
-    <!-- Cartão Principal (Design Centrado) -->
     <main id="main-card" class="dyn-bg w-full max-w-xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col">
         
-        <!-- SECÇÃO DO TIMER -->
         <section class="p-8 pb-6 flex flex-col items-center">
-            <!-- Modos -->
             <div class="flex gap-1 dyn-input p-1.5 rounded-full mb-8 w-full max-w-md justify-between border-none">
                 <button id="mode-pomodoro" class="flex-1 py-2 rounded-full text-sm font-bold dyn-bg shadow-sm dyn-text" onclick="setMode('pomodoro')">Pomodoro</button>
                 <button id="mode-shortBreak" class="flex-1 py-2 rounded-full text-sm font-medium dyn-text-muted hover:dyn-text" onclick="setMode('shortBreak')">Pausa Curta</button>
                 <button id="mode-longBreak" class="flex-1 py-2 rounded-full text-sm font-medium dyn-text-muted hover:dyn-text" onclick="setMode('longBreak')">Pausa Longa</button>
             </div>
 
-            <!-- Relógio -->
             <div id="timer-display" class="text-8xl sm:text-[7rem] font-bold tracking-tighter dyn-text mb-8 font-mono timer-text drop-shadow-sm">
                 25:00
             </div>
 
-            <!-- Controlos de Tempo -->
             <div class="flex items-center gap-6">
                 <button id="btn-reset" class="dyn-text-muted hover:dyn-text w-12 h-12 rounded-full flex items-center justify-center text-3xl active:scale-95 transition-transform dyn-input border-none shadow-sm" onclick="resetTimer()" title="Reiniciar">
                     <i class="ph ph-arrow-counter-clockwise"></i>
                 </button>
                 
-                <button id="btn-start" class="btn-native-fallback text-white w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-xl hover:scale-105 active:scale-95 transition-all" style="background-color: var(--bg-color);" onclick="toggleTimer()">
+                <button id="btn-start" class="text-white w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-xl hover:scale-105 active:scale-95 transition-all" style="background-color: var(--bg-color);" onclick="toggleTimer()">
                     <i id="play-icon" class="ph-fill ph-play ml-1"></i>
                 </button>
                 
@@ -123,7 +107,6 @@
             </div>
         </section>
 
-        <!-- SECÇÃO DE NAVEGAÇÃO (ABAS) -->
         <nav class="w-full flex border-y dyn-border" style="background-color: rgba(0,0,0,0.02);">
             <button onclick="switchTab('audio')" id="tab-btn-audio" class="flex-1 py-3 text-sm font-semibold dyn-text border-b-2 flex justify-center items-center gap-2 dyn-bg transition-all" style="border-color: var(--bg-color);">
                 <i class="ph-fill ph-microphone text-lg"></i> Lembretes
@@ -136,10 +119,8 @@
             </button>
         </nav>
 
-        <!-- CONTEÚDOS DAS ABAS -->
         <section class="p-6 flex-1 min-h-[300px] flex flex-col" style="background-color: rgba(0,0,0,0.02);">
             
-            <!-- ABA 1: Lembretes de Voz -->
             <div id="tab-audio" class="h-full flex flex-col">
                 <div class="flex gap-4 items-end mb-5">
                     <div class="flex-1">
@@ -163,66 +144,50 @@
                 
                 <div class="flex-1 dyn-bg dyn-border border rounded-xl p-4 shadow-sm overflow-y-auto no-scrollbar max-h-[220px]">
                     <h4 class="text-xs font-semibold dyn-text-muted uppercase tracking-wider mb-3">Agendamentos</h4>
-                    <ul id="reminders-list" class="space-y-3">
-                        <!-- Lembretes aparecerão aqui -->
-                    </ul>
+                    <ul id="reminders-list" class="space-y-3"></ul>
                 </div>
             </div>
 
-            <!-- ABA 2: Notas & Anexos -->
             <div id="tab-notes" class="h-full hidden flex-col">
-                <!-- Barra de Ferramentas -->
                 <div class="p-2 dyn-border border rounded-t-xl flex flex-wrap gap-1.5 items-center dyn-bg shadow-sm z-10">
                     <div class="flex gap-1 dyn-input p-1 rounded-lg border-none">
-                        <button onclick="formatText('formatBlock', 'P')" class="px-2 py-1 dyn-text-muted hover:dyn-text rounded text-xs font-medium" title="Texto Normal">Normal</button>
-                        <button onclick="formatText('formatBlock', 'H2')" class="px-2 py-1 dyn-text rounded text-xs font-bold" title="Texto Grande">Grande</button>
+                        <button onclick="formatText('formatBlock', 'P')" class="px-2 py-1 dyn-text-muted hover:dyn-text rounded text-xs font-medium">Normal</button>
+                        <button onclick="formatText('formatBlock', 'H2')" class="px-2 py-1 dyn-text rounded text-xs font-bold">Grande</button>
                     </div>
                     <div class="w-px h-5 dyn-border border-l my-auto"></div>
-                    <button onclick="formatText('bold')" class="w-7 h-7 flex items-center justify-center hover:bg-black/10 rounded dyn-text-muted" title="Negrito"><i class="ph ph-text-b"></i></button>
-                    <button onclick="formatText('italic')" class="w-7 h-7 flex items-center justify-center hover:bg-black/10 rounded dyn-text-muted" title="Itálico"><i class="ph ph-text-italic"></i></button>
-                    <button onclick="formatText('strikeThrough')" class="w-7 h-7 flex items-center justify-center hover:bg-black/10 rounded dyn-text-muted" title="Sobretachar"><i class="ph ph-text-strikethrough"></i></button>
-                    <button onclick="formatText('backColor', 'yellow')" class="w-7 h-7 flex items-center justify-center hover:bg-black/10 rounded dyn-text-muted" title="Grifar"><i class="ph-fill ph-highlighter text-yellow-500"></i></button>
-                    <button onclick="formatText('insertUnorderedList')" class="w-7 h-7 flex items-center justify-center hover:bg-black/10 rounded dyn-text-muted" title="Lista"><i class="ph ph-list-bullets"></i></button>
+                    <button onclick="formatText('bold')" class="w-7 h-7 flex items-center justify-center hover:bg-black/10 rounded dyn-text-muted"><i class="ph ph-text-b"></i></button>
+                    <button onclick="formatText('italic')" class="w-7 h-7 flex items-center justify-center hover:bg-black/10 rounded dyn-text-muted"><i class="ph ph-text-italic"></i></button>
+                    <button onclick="formatText('strikeThrough')" class="w-7 h-7 flex items-center justify-center hover:bg-black/10 rounded dyn-text-muted"><i class="ph ph-text-strikethrough"></i></button>
+                    <button onclick="formatText('insertUnorderedList')" class="w-7 h-7 flex items-center justify-center hover:bg-black/10 rounded dyn-text-muted"><i class="ph ph-list-bullets"></i></button>
                     
                     <div class="flex-1 flex justify-end">
-                        <label class="cursor-pointer text-xs font-bold px-3 py-1.5 dyn-input hover:brightness-95 border-none rounded-lg flex items-center gap-1.5" title="Anexar (PDF, XLSX, DOCX)">
+                        <label class="cursor-pointer text-xs font-bold px-3 py-1.5 dyn-input hover:brightness-95 border-none rounded-lg flex items-center gap-1.5">
                             <i class="ph-bold ph-paperclip text-sm"></i> Anexar
                             <input type="file" id="file-upload" class="hidden" accept=".pdf,.xlsx,.docx" multiple>
                         </label>
                     </div>
                 </div>
-                <!-- Editor -->
                 <div id="editor" class="flex-1 p-4 dyn-border border-x border-b rounded-b-xl outline-none overflow-y-auto no-scrollbar dyn-text leading-relaxed dyn-bg shadow-inner max-h-[250px]" contenteditable="true" placeholder="Registe anotações ou anexe ficheiros aqui..."></div>
             </div>
 
-            <!-- ABA 3: Configurações & Temas (AVANÇADO) -->
             <div id="tab-settings" class="h-full hidden flex-col">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                    <!-- Customização Visual -->
                     <div>
                         <h4 class="text-xs font-semibold dyn-text-muted uppercase tracking-wider mb-4 flex items-center gap-1"><i class="ph-fill ph-palette"></i> Aspeto Visual</h4>
-                        
-                        <!-- Cor de Fundo -->
                         <div class="mb-4">
-                            <label class="block text-sm font-medium dyn-text mb-2">Cor de Fundo da Tela</label>
+                            <label class="block text-sm font-medium dyn-text mb-2">Cor de Fundo</label>
                             <div class="flex flex-wrap gap-2">
-                                <!-- Cores Pré-definidas -->
-                                <button onclick="changeTheme('#bb2246')" class="w-8 h-8 rounded-full bg-[#bb2246] border-2 border-transparent hover:border-white shadow-md hover:scale-110 transition-all"></button>
-                                <button onclick="changeTheme('#f59e0b')" class="w-8 h-8 rounded-full bg-[#f59e0b] border-2 border-transparent hover:border-white shadow-md hover:scale-110 transition-all"></button>
-                                <button onclick="changeTheme('#10b981')" class="w-8 h-8 rounded-full bg-[#10b981] border-2 border-transparent hover:border-white shadow-md hover:scale-110 transition-all"></button>
-                                <button onclick="changeTheme('#0f766e')" class="w-8 h-8 rounded-full bg-[#0f766e] border-2 border-transparent hover:border-white shadow-md hover:scale-110 transition-all"></button>
-                                <button onclick="changeTheme('#4338ca')" class="w-8 h-8 rounded-full bg-[#4338ca] border-2 border-transparent hover:border-white shadow-md hover:scale-110 transition-all"></button>
-                                <button onclick="changeTheme('#334155')" class="w-8 h-8 rounded-full bg-[#334155] border-2 border-transparent hover:border-white shadow-md hover:scale-110 transition-all"></button>
-                                
-                                <!-- Cor Personalizada (Color Picker) -->
-                                <div class="relative w-8 h-8 rounded-full overflow-hidden shadow-md hover:scale-110 transition-all cursor-pointer border-2 border-dashed dyn-border flex items-center justify-center dyn-bg" title="Cor Personalizada">
-                                    <i class="ph ph-plus dyn-text-muted text-xs absolute pointer-events-none"></i>
-                                    <input type="color" id="custom-color-picker" class="absolute inset-0 w-[200%] h-[200%] -top-[50%] -left-[50%] cursor-pointer opacity-0" onchange="changeTheme(this.value)">
+                                <button onclick="changeTheme('#bb2246')" class="w-8 h-8 rounded-full bg-[#bb2246] shadow-md hover:scale-110 transition-all"></button>
+                                <button onclick="changeTheme('#f59e0b')" class="w-8 h-8 rounded-full bg-[#f59e0b] shadow-md hover:scale-110 transition-all"></button>
+                                <button onclick="changeTheme('#10b981')" class="w-8 h-8 rounded-full bg-[#10b981] shadow-md hover:scale-110 transition-all"></button>
+                                <button onclick="changeTheme('#4338ca')" class="w-8 h-8 rounded-full bg-[#4338ca] shadow-md hover:scale-110 transition-all"></button>
+                                <div class="relative w-8 h-8 rounded-full overflow-hidden shadow-md border-2 border-dashed dyn-border flex items-center justify-center dyn-bg">
+                                    <input type="color" id="custom-color-picker" class="absolute inset-0 cursor-pointer opacity-0" onchange="changeTheme(this.value)">
+                                    <i class="ph ph-plus dyn-text-muted text-xs pointer-events-none"></i>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Modo Claro/Escuro do Cartão -->
                         <div>
                             <label class="block text-sm font-medium dyn-text mb-2">Tema do Quadro</label>
                             <div class="flex gap-2 p-1 dyn-input rounded-xl border-none">
@@ -236,77 +201,68 @@
                         </div>
                     </div>
                     
-                    <!-- Tempos -->
                     <div>
                         <h4 class="text-xs font-semibold dyn-text-muted uppercase tracking-wider mb-4 flex items-center gap-1"><i class="ph-fill ph-clock"></i> Tempos (min)</h4>
                         <div class="space-y-2">
-                            <div class="flex justify-between items-center dyn-bg px-3 py-2 dyn-border border rounded-xl shadow-sm">
-                                <label class="dyn-text text-sm font-medium">Pomodoro</label>
-                                <input type="number" id="input-pomodoro" class="w-16 dyn-input border-none rounded-lg px-2 py-1 text-center outline-none focus:ring-2 focus:ring-stone-400 text-sm" min="1" max="90">
-                            </div>
-                            <div class="flex justify-between items-center dyn-bg px-3 py-2 dyn-border border rounded-xl shadow-sm">
-                                <label class="dyn-text text-sm font-medium">Pausa Curta</label>
-                                <input type="number" id="input-short" class="w-16 dyn-input border-none rounded-lg px-2 py-1 text-center outline-none focus:ring-2 focus:ring-stone-400 text-sm" min="1" max="30">
-                            </div>
-                            <div class="flex justify-between items-center dyn-bg px-3 py-2 dyn-border border rounded-xl shadow-sm">
-                                <label class="dyn-text text-sm font-medium">Pausa Longa</label>
-                                <input type="number" id="input-long" class="w-16 dyn-input border-none rounded-lg px-2 py-1 text-center outline-none focus:ring-2 focus:ring-stone-400 text-sm" min="1" max="60">
-                            </div>
-                            <button id="save-settings" class="w-full mt-3 py-2.5 rounded-xl font-bold text-white shadow-md active:scale-95 transition-all text-sm flex items-center justify-center gap-2" style="background-color: var(--bg-color);">
-                                <i class="ph-bold ph-check"></i> Guardar Tempos
+                            <input type="number" id="input-pomodoro" class="w-full dyn-input rounded-xl px-4 py-2 text-sm outline-none mb-2" placeholder="Pomodoro">
+                            <input type="number" id="input-short" class="w-full dyn-input rounded-xl px-4 py-2 text-sm outline-none mb-2" placeholder="Pausa Curta">
+                            <input type="number" id="input-long" class="w-full dyn-input rounded-xl px-4 py-2 text-sm outline-none mb-2" placeholder="Pausa Longa">
+                            <button id="save-settings" class="w-full py-2.5 rounded-xl font-bold text-white shadow-md active:scale-95 transition-all text-sm" style="background-color: var(--bg-color);">
+                                Guardar Tempos
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
-
         </section>
     </main>
 
-    <!-- Modal de Disparo de Lembrete -->
     <div id="reminder-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md hidden z-[70] flex items-center justify-center opacity-0 transition-opacity duration-300 p-4">
         <div id="reminder-content" class="dyn-bg rounded-[2rem] p-8 w-full max-w-sm scale-95 transition-transform duration-300 shadow-2xl text-center border-t-8" style="border-color: var(--bg-color);">
             <div class="w-16 h-16 rounded-full dyn-input mx-auto flex items-center justify-center mb-4 text-3xl animate-bounce border-none" style="color: var(--bg-color);">
                 <i class="ph-fill ph-bell-ringing"></i>
             </div>
             <h3 class="text-2xl font-bold dyn-text mb-2">Lembrete de Áudio!</h3>
-            <p class="dyn-text-muted text-sm mb-6">Escute a gravação que agendou.</p>
-            
             <audio id="reminder-audio-player" controls class="w-full mb-6"></audio>
-
-            <button onclick="closeReminderModal()" class="w-full py-3 rounded-xl font-bold text-white shadow-lg hover:opacity-90 active:scale-95 transition-all" style="background-color: var(--bg-color);">
+            <button onclick="closeReminderModal()" class="w-full py-3 rounded-xl font-bold text-white shadow-lg active:scale-95 transition-all" style="background-color: var(--bg-color);">
                 Compreendido
             </button>
         </div>
     </div>
 
-    <!-- Elementos Ocultos para o Picture-in-Picture -->
     <canvas id="pip-canvas" width="400" height="400" class="hidden"></canvas>
     <video id="pip-video" class="hidden" muted autoplay playsinline></video>
 
     <script>
-        /* --- 1. CORE E PWA --- */
+        /* --- 1. PWA CORE --- */
         let deferredPrompt;
         const installBtn = document.getElementById('install-btn');
-        const themeColorMeta = document.getElementById('meta-theme-color');
 
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e; installBtn.classList.remove('hidden');
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.classList.remove('hidden');
         });
 
         installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                deferredPrompt = null; installBtn.classList.add('hidden');
+                deferredPrompt = null;
+                installBtn.classList.add('hidden');
             }
         });
 
-        if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
-            window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+        // Registro simplificado e direto para evitar erros de path no GitHub
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW registrado!', reg))
+                    .catch(err => console.log('Erro no SW:', err));
+            });
         }
 
-        /* --- 2. TEMAS E CORES (Interface & Cartão) --- */
+        /* --- 2. TEMAS --- */
         let currentTheme = localStorage.getItem('pomodoro_theme') || '#bb2246';
         let currentCardTheme = localStorage.getItem('pomodoro_card_theme') || 'light';
         const mainCard = document.getElementById('main-card');
@@ -314,460 +270,81 @@
         function changeTheme(color) {
             currentTheme = color;
             document.documentElement.style.setProperty('--bg-color', color);
-            themeColorMeta.setAttribute('content', color);
+            document.getElementById('meta-theme-color').setAttribute('content', color);
             localStorage.setItem('pomodoro_theme', color);
-            
-            // Sincroniza o seletor personalizado se foi usado uma cor customizada
             document.getElementById('custom-color-picker').value = color;
-
-            // Atualiza cor do botão da aba ativa
-            const activeTabBtn = document.querySelector('nav button.font-semibold');
-            if (activeTabBtn) activeTabBtn.style.borderColor = color;
-
-            if (typeof pipCtx !== 'undefined' && pipCtx) {
-                updatePiPCanvas();
-            }
         }
 
         function setCardTheme(theme) {
             currentCardTheme = theme;
             localStorage.setItem('pomodoro_card_theme', theme);
-            
-            const btnLight = document.getElementById('btn-theme-light');
-            const btnDark = document.getElementById('btn-theme-dark');
-
-            if (theme === 'dark') {
-                mainCard.classList.add('dark-card');
-                
-                // UI Toggle Dark
-                btnDark.classList.replace('text-stone-500', 'text-stone-100');
-                btnDark.classList.replace('hover:text-stone-800', 'hover:text-white');
-                btnDark.classList.add('bg-stone-700', 'shadow-sm', 'font-semibold');
-                btnDark.classList.remove('font-medium');
-                
-                btnLight.classList.replace('text-stone-800', 'text-stone-500');
-                btnLight.classList.remove('bg-white', 'shadow-sm', 'font-semibold');
-                btnLight.classList.add('font-medium', 'hover:text-stone-800');
-            } else {
-                mainCard.classList.remove('dark-card');
-                
-                // UI Toggle Light
-                btnLight.classList.replace('text-stone-500', 'text-stone-800');
-                btnLight.classList.add('bg-white', 'shadow-sm', 'font-semibold');
-                btnLight.classList.remove('font-medium', 'hover:text-stone-800');
-                
-                btnDark.classList.replace('text-stone-100', 'text-stone-500');
-                btnDark.classList.remove('bg-stone-700', 'shadow-sm', 'font-semibold');
-                btnDark.classList.add('font-medium', 'hover:text-stone-800');
-            }
-
-            if (typeof pipCtx !== 'undefined' && pipCtx) updatePiPCanvas();
+            if (theme === 'dark') mainCard.classList.add('dark-card');
+            else mainCard.classList.remove('dark-card');
         }
 
-        /* --- 3. GESTÃO DAS ABAS --- */
-        function switchTab(tabId) {
-            const tabs = ['audio', 'notes', 'settings'];
-            
-            tabs.forEach(t => {
-                const btn = document.getElementById(`tab-btn-${t}`);
-                const content = document.getElementById(`tab-${t}`);
-                
-                if (t === tabId) {
-                    btn.className = "flex-1 py-3 text-sm font-semibold dyn-text border-b-2 flex justify-center items-center gap-2 dyn-bg transition-all";
-                    btn.style.borderColor = currentTheme;
-                    content.classList.remove('hidden');
-                    content.classList.add('flex');
-                } else {
-                    btn.className = "flex-1 py-3 text-sm font-medium dyn-text-muted border-b-2 border-transparent hover:dyn-text hover:bg-black/5 flex justify-center items-center gap-2 transition-all";
-                    btn.style.borderColor = 'transparent';
-                    content.classList.remove('flex');
-                    content.classList.add('hidden');
-                }
-            });
-
-            if (tabId === 'settings') {
-                document.getElementById('input-pomodoro').value = MODES.pomodoro;
-                document.getElementById('input-short').value = MODES.shortBreak;
-                document.getElementById('input-long').value = MODES.longBreak;
-            }
-        }
-
-        /* --- 4. LÓGICA DO POMODORO --- */
+        /* --- 3. TIMER LOGIC --- */
         let MODES = JSON.parse(localStorage.getItem('pomodoro_settings')) || { pomodoro: 25, shortBreak: 5, longBreak: 15 };
         let currentMode = 'pomodoro';
         let timeLeft = MODES.pomodoro * 60;
         let timerId = null;
         let isRunning = false;
 
-        const timerDisplay = document.getElementById('timer-display');
-        const playIcon = document.getElementById('play-icon');
-
         function updateDisplay() {
             const minutes = Math.floor(timeLeft / 60);
             const seconds = timeLeft % 60;
             const text = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            timerDisplay.textContent = text;
+            document.getElementById('timer-display').textContent = text;
             document.title = `${text} - Pomodoro`;
-            updatePiPCanvas();
-        }
-
-        function setMode(mode) {
-            if(isRunning) toggleTimer();
-            currentMode = mode;
-            timeLeft = MODES[mode] * 60;
-            updateDisplay();
-
-            ['pomodoro', 'shortBreak', 'longBreak'].forEach(m => {
-                const btn = document.getElementById(`mode-${m}`);
-                if (m === mode) {
-                    btn.classList.replace('dyn-text-muted', 'dyn-text');
-                    btn.classList.add('dyn-bg', 'shadow-sm', 'font-bold');
-                    btn.classList.remove('font-medium', 'hover:dyn-text');
-                } else {
-                    btn.classList.replace('dyn-text', 'dyn-text-muted');
-                    btn.classList.remove('dyn-bg', 'shadow-sm', 'font-bold');
-                    btn.classList.add('font-medium', 'hover:dyn-text');
-                }
-            });
         }
 
         function toggleTimer() {
             if (isRunning) {
                 clearInterval(timerId);
-                playIcon.classList.replace('ph-pause', 'ph-play');
-                playIcon.classList.add('ml-1');
+                document.getElementById('play-icon').classList.replace('ph-pause', 'ph-play');
             } else {
                 timerId = setInterval(() => {
                     timeLeft--;
                     updateDisplay();
                     if (timeLeft <= 0) {
                         clearInterval(timerId);
-                        playIcon.classList.replace('ph-pause', 'ph-play');
-                        isRunning = false;
-                        alert("Tempo esgotado!"); 
+                        alert("Tempo esgotado!");
+                        resetTimer();
                     }
                 }, 1000);
-                playIcon.classList.replace('ph-play', 'ph-pause');
-                playIcon.classList.remove('ml-1');
+                document.getElementById('play-icon').classList.replace('ph-play', 'ph-pause');
             }
             isRunning = !isRunning;
         }
 
         function resetTimer() {
-            if(isRunning) toggleTimer();
+            clearInterval(timerId);
+            isRunning = false;
             timeLeft = MODES[currentMode] * 60;
             updateDisplay();
+            document.getElementById('play-icon').classList.replace('ph-pause', 'ph-play');
         }
 
-        /* --- 5. PICTURE-IN-PICTURE --- */
-        const pipCanvas = document.getElementById('pip-canvas');
-        const pipVideo = document.getElementById('pip-video');
-        const pipCtx = pipCanvas.getContext('2d');
-        let pipStream = null;
-
-        function updatePiPCanvas() {
-            // Fundo
-            pipCtx.fillStyle = currentTheme;
-            pipCtx.fillRect(0, 0, 400, 400);
-            
-            // Círculo Central baseado no tema do cartão
-            pipCtx.beginPath();
-            pipCtx.arc(200, 200, 180, 0, 2 * Math.PI);
-            pipCtx.fillStyle = currentCardTheme === 'dark' ? '#1c1917' : '#ffffff';
-            pipCtx.fill();
-
-            // Texto
-            pipCtx.fillStyle = currentCardTheme === 'dark' ? '#f5f5f4' : '#292524';
-            pipCtx.font = 'bold 90px monospace';
-            pipCtx.textAlign = 'center';
-            pipCtx.textBaseline = 'middle';
-            pipCtx.fillText(timerDisplay.textContent, 200, 200);
+        function setMode(mode) {
+            currentMode = mode;
+            resetTimer();
         }
 
-        async function togglePiP() {
-            try {
-                if (document.pictureInPictureElement) {
-                    await document.exitPictureInPicture();
-                    return;
-                }
-                updatePiPCanvas();
-                if (!pipStream) {
-                    pipStream = pipCanvas.captureStream(30);
-                    pipVideo.srcObject = pipStream;
-                    await pipVideo.play();
-                }
-                await pipVideo.requestPictureInPicture();
-            } catch (error) {
-                console.error(error);
-                alert("O seu navegador não suporta a API de Picture-in-Picture.");
-            }
-        }
-
-        /* --- 6. EDITOR RICH TEXT (Aba Notas) --- */
-        const editor = document.getElementById('editor');
-
-        function formatText(cmd, arg = null) { 
-            if(cmd === 'backColor' && !document.queryCommandSupported('backColor')) {
-                cmd = 'hiliteColor';
-            }
-            document.execCommand(cmd, false, arg); 
-            editor.focus(); 
-            saveData(); 
-        }
-        
-        function saveData() { localStorage.setItem('pomodoro_notes', editor.innerHTML); }
-        editor.addEventListener('input', saveData);
-        if (localStorage.getItem('pomodoro_notes')) editor.innerHTML = localStorage.getItem('pomodoro_notes');
-
-        document.getElementById('file-upload').addEventListener('change', function(e) {
-            const files = e.target.files;
-            if(files.length === 0) return;
-            
-            for(let file of files) {
-                if (file.size > 1500000) {
-                    alert(`O ficheiro "${file.name}" é demasiado grande. Por favor, anexe ficheiros até 1.5 MB.`);
-                    continue;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const base64 = event.target.result;
-                    let icon = 'ph-file';
-                    let iconColor = 'text-stone-500';
-                    
-                    if(file.name.endsWith('.pdf')) { icon = 'ph-file-pdf'; iconColor = 'text-red-500'; }
-                    else if(file.name.endsWith('.xlsx')) { icon = 'ph-file-xls'; iconColor = 'text-emerald-500'; }
-                    else if(file.name.endsWith('.docx')) { icon = 'ph-file-doc'; iconColor = 'text-blue-500'; }
-                    
-                    const htmlToInsert = `
-                        <div contenteditable="false" class="flex items-center justify-between p-3 my-2 dyn-border border rounded-xl dyn-bg w-[95%] shadow-sm select-none">
-                            <div class="flex items-center gap-3 overflow-hidden">
-                                <i class="ph-fill ${icon} text-3xl ${iconColor}"></i>
-                                <div class="flex-1 overflow-hidden">
-                                    <p class="text-sm font-semibold dyn-text truncate">${file.name}</p>
-                                    <p class="text-xs dyn-text-muted">${(file.size / 1024).toFixed(1)} KB</p>
-                                </div>
-                            </div>
-                            <a href="${base64}" download="${file.name}" class="p-2 dyn-text-muted hover:dyn-text hover:bg-black/5 rounded-full transition-colors cursor-pointer" title="Descarregar Ficheiro">
-                                <i class="ph-bold ph-download-simple"></i>
-                            </a>
-                        </div>&nbsp;
-                    `;
-                    
-                    editor.focus();
-                    document.execCommand('insertHTML', false, htmlToInsert);
-                    saveData();
-                };
-                reader.readAsDataURL(file);
-            }
-            this.value = '';
-        });
-
-        /* --- 7. LEMBRETES DE VOZ (Aba Lembretes) --- */
-        let mediaRecorder;
-        let audioChunks = [];
-        let isRecording = false;
-        
-        const btnRecord = document.getElementById('btn-record');
-        const recordIcon = document.getElementById('record-icon');
-        const recordText = document.getElementById('record-text');
-        const remindersList = document.getElementById('reminders-list');
-
-        async function toggleRecording() {
-            if (isRecording) {
-                mediaRecorder.stop();
-                btnRecord.classList.replace('bg-red-500', 'bg-stone-800');
-                btnRecord.classList.remove('animate-pulse');
-                recordIcon.classList.replace('ph-stop', 'ph-microphone');
-                recordText.textContent = "Gravar Áudio";
-                isRecording = false;
-            } else {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
-                    audioChunks = [];
-
-                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                    
-                    mediaRecorder.onstop = () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        saveReminder(audioBlob);
-                        stream.getTracks().forEach(track => track.stop());
-                    };
-
-                    mediaRecorder.start();
-                    btnRecord.classList.replace('bg-stone-800', 'bg-red-500');
-                    btnRecord.classList.add('animate-pulse');
-                    recordIcon.classList.replace('ph-microphone', 'ph-stop');
-                    recordText.textContent = "Parar e Agendar";
-                    isRecording = true;
-                } catch (err) {
-                    alert("Erro ao aceder ao microfone. Verifique as permissões do navegador.");
-                    console.error(err);
-                }
-            }
-        }
-
-        function saveReminder(blob) {
-            const timeInput = document.getElementById('audio-time').value;
-            const datetimeInput = document.getElementById('audio-datetime').value;
-            
-            let targetTime;
-            let displayLabel = "";
-
-            if (datetimeInput) {
-                targetTime = new Date(datetimeInput).getTime();
-                if (targetTime <= Date.now()) {
-                    alert("A data/hora agendada deve ser no futuro.");
-                    return;
-                }
-                displayLabel = "Agendado para " + new Date(targetTime).toLocaleString('pt-PT', {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'});
-            } else {
-                const minutes = parseInt(timeInput) || 5;
-                targetTime = Date.now() + (minutes * 60000);
-                displayLabel = `Agendado p/ daqui a ${minutes} min`;
-            }
-            
-            const reader = new FileReader();
-            reader.readAsDataURL(blob);
-            reader.onloadend = () => {
-                const base64Audio = reader.result;
-                const newReminder = {
-                    id: Date.now().toString(),
-                    createdAt: Date.now(),
-                    timestamp: targetTime,
-                    audioData: base64Audio,
-                    displayLabel: displayLabel
-                };
-                
-                let reminders = JSON.parse(localStorage.getItem('pomodoro_reminders') || '[]');
-                reminders.push(newReminder);
-                localStorage.setItem('pomodoro_reminders', JSON.stringify(reminders));
-                renderReminders();
-
-                document.getElementById('audio-time').value = '5';
-                document.getElementById('audio-datetime').value = '';
-            };
-        }
-
-        function renderReminders() {
-            let reminders = JSON.parse(localStorage.getItem('pomodoro_reminders') || '[]');
-            remindersList.innerHTML = '';
-            
-            if(reminders.length === 0) {
-                remindersList.innerHTML = '<li class="dyn-text-muted text-sm text-center py-4">Sem lembretes agendados.</li>';
-                return;
-            }
-
-            reminders.sort((a,b) => a.timestamp - b.timestamp).forEach(rem => {
-                const date = new Date(rem.timestamp);
-                const timeString = `${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
-                const dateString = `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}`;
-                
-                const label = rem.displayLabel || `Agendado p/ daqui a ${rem.minutesSet} min`;
-
-                const li = document.createElement('li');
-                li.className = "flex justify-between items-center dyn-bg p-3 rounded-xl dyn-border border shadow-sm";
-                li.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full dyn-input flex items-center justify-center border-none">
-                            <i class="ph-fill ph-bell" style="color: var(--bg-color);"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold dyn-text">Toca dia ${dateString} às ${timeString}</p>
-                            <p class="text-xs dyn-text-muted">${label}</p>
-                        </div>
-                    </div>
-                    <button onclick="deleteReminder('${rem.id}')" class="dyn-text-muted hover:text-red-500 p-2 transition-colors"><i class="ph-bold ph-trash"></i></button>
-                `;
-                remindersList.appendChild(li);
+        function switchTab(tabId) {
+            ['audio', 'notes', 'settings'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`tab-btn-${t}`).classList.remove('border-b-2');
+                document.getElementById(`tab-btn-${t}`).style.borderColor = 'transparent';
             });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+            activeBtn.classList.add('border-b-2');
+            activeBtn.style.borderColor = currentTheme;
         }
-
-        function deleteReminder(id) {
-            let reminders = JSON.parse(localStorage.getItem('pomodoro_reminders') || '[]');
-            reminders = reminders.filter(r => r.id !== id);
-            localStorage.setItem('pomodoro_reminders', JSON.stringify(reminders));
-            renderReminders();
-        }
-
-        setInterval(() => {
-            let reminders = JSON.parse(localStorage.getItem('pomodoro_reminders') || '[]');
-            const now = Date.now();
-            let changed = false;
-
-            reminders = reminders.filter(r => {
-                if (now >= r.timestamp) {
-                    fireReminder(r.audioData);
-                    changed = true;
-                    return false; 
-                }
-                return true;
-            });
-
-            if (changed) {
-                localStorage.setItem('pomodoro_reminders', JSON.stringify(reminders));
-                renderReminders();
-            }
-        }, 5000);
-
-        function fireReminder(base64Audio) {
-            const modal = document.getElementById('reminder-modal');
-            const content = document.getElementById('reminder-content');
-            const player = document.getElementById('reminder-audio-player');
-            
-            player.src = base64Audio;
-            
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-                player.play().catch(e => console.log("Autoplay bloqueado", e));
-            }, 10);
-            
-            if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
-        }
-
-        function closeReminderModal() {
-            const modal = document.getElementById('reminder-modal');
-            const content = document.getElementById('reminder-content');
-            const player = document.getElementById('reminder-audio-player');
-            
-            player.pause();
-            player.src = ""; 
-            
-            modal.classList.add('opacity-0');
-            content.classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-
-        /* --- 8. GUARDAR CONFIGURAÇÕES (Aba Ajustes) --- */
-        document.getElementById('save-settings').addEventListener('click', () => {
-            MODES.pomodoro = parseInt(document.getElementById('input-pomodoro').value) || 25;
-            MODES.shortBreak = parseInt(document.getElementById('input-short').value) || 5;
-            MODES.longBreak = parseInt(document.getElementById('input-long').value) || 15;
-            localStorage.setItem('pomodoro_settings', JSON.stringify(MODES));
-            
-            if (!isRunning) resetTimer();
-            
-            const btn = document.getElementById('save-settings');
-            const originalColor = btn.style.backgroundColor;
-            const originalHTML = btn.innerHTML;
-            
-            btn.style.backgroundColor = '#10b981'; 
-            btn.innerHTML = '<i class="ph-bold ph-check"></i> Tempos Guardados!';
-            
-            setTimeout(() => {
-                btn.style.backgroundColor = originalColor;
-                btn.innerHTML = originalHTML;
-            }, 1500);
-        });
 
         // --- INIT ---
         changeTheme(currentTheme);
         setCardTheme(currentCardTheme);
         updateDisplay();
-        renderReminders();
     </script>
 </body>
 </html>
