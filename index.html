@@ -1,663 +1,317 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador Tributário + Notas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pomodoro Minimalista</title>
     
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/lucide-react@latest"></script>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#f5f5f4">
+    <link rel="apple-touch-icon" href="icon.png">
 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        body { margin: 0; background-color: #06090F; overflow: hidden; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #06090F; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #21293A; border-radius: 10px; }
-        
-        /* Estilo para o texto grifado na aba de notas */
-        .highlighted-text { background-color: rgba(245, 158, 11, 0.25); border-bottom: 2px solid #F59E0B; color: #fff;}
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease; overflow-x: hidden; }
+        button, input { transition: all 0.2s ease-in-out; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        #editor[contenteditable="true"]:empty:before { content: attr(placeholder); color: #a8a29e; pointer-events: none; display: block; }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
     </style>
 </head>
-<body>
-    <div id="root"></div>
+<body class="bg-stone-100 min-h-screen flex items-center justify-center text-stone-800 transition-colors duration-500" id="app-body">
 
-    <script type="text/babel">
-        // Extração dos hooks do React global
-        const { useState, useMemo, useEffect } = React;
-        // Extração dos ícones da Lucide global
-        const { Highlighter, MessageSquare, Trash2, ChevronRight, ChevronLeft } = LucideReact;
-
-        // ═══════════════════════════════════════════════
-        // COMPONENTE: BARRA LATERAL DE NOTAS (ABA NOTAS)
-        // ═══════════════════════════════════════════════
-        const SidebarNotes = ({ isOpen, toggle }) => {
-            const [note, setNote] = useState(localStorage.getItem('tax_notes') || "");
-            const [isHighlighting, setIsHighlighting] = useState(false);
-
-            useEffect(() => {
-                localStorage.setItem('tax_notes', note);
-            }, [note]);
-
-            return (
-                <div className={`fixed top-0 right-0 h-full bg-[#0D1117] border-l border-[#21293A] transition-all duration-300 z-50 ${isOpen ? 'w-80' : 'w-0'}`}>
-                    <button 
-                        onClick={toggle}
-                        className="absolute -left-8 top-1/2 bg-[#0D1117] border border-[#21293A] border-r-0 p-1 rounded-l-md text-[#94A3B8]"
-                    >
-                        {isOpen ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-                    </button>
-
-                    {isOpen && (
-                        <div className="p-4 h-full flex flex-col">
-                            <div className="flex items-center justify-between mb-4 border-b border-[#21293A] pb-3">
-                                <div className="flex items-center gap-2 text-amber-500 font-bold text-xs uppercase tracking-widest">
-                                    <MessageSquare size={14} />
-                                    Notas de Auditoria
-                                </div>
-                                <div className="flex gap-2">
-                                    <button 
-                                        onClick={() => setIsHighlighting(!isHighlighting)}
-                                        className={`p-1.5 rounded transition-colors ${isHighlighting ? 'bg-amber-500 text-black' : 'text-slate-400 hover:bg-slate-800'}`}
-                                        title={isHighlighting ? "Desativar Grifo" : "Ativar Grifo"}
-                                    >
-                                        <Highlighter size={16} />
-                                    </button>
-                                    <button onClick={() => setNote("")} className="p-1.5 text-slate-400 hover:text-red-400 transition-colors" title="Limpar notas">
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <textarea
-                                value={note}
-                                onChange={(e) => setNote(e.target.value)}
-                                className={`flex-1 bg-[#151B25] border border-[#21293A] rounded p-3 text-sm text-slate-300 outline-none focus:border-amber-500/50 resize-none custom-scrollbar transition-all ${isHighlighting ? 'highlighted-text' : ''}`}
-                                placeholder="Insira suas observações tributárias aqui..."
-                            />
-                        </div>
-                    )}
+    <main id="main-card" class="bg-white p-8 sm:p-10 rounded-[3rem] shadow-2xl border border-stone-100 w-full max-w-md mx-4 flex flex-col items-center z-10 relative">
+        
+        <header class="w-full flex justify-between items-center mb-8">
+            <h1 class="text-lg font-semibold flex items-center gap-2 text-stone-500">
+                <i class="ph ph-timer text-2xl"></i> Pomodoro
+            </h1>
+            
+            <div class="flex gap-1.5">
+                <div class="relative flex items-center shrink-0" title="Cor de Fundo">
+                    <input type="color" id="color-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" value="#f5f5f4">
+                    <button class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-paint-bucket text-lg"></i></button>
                 </div>
-            );
-        };
-
-        // ═══════════════════════════════════════════════
-        // O SEU CÓDIGO ORIGINAL INTACTO (A PARTIR DAQUI)
-        // ═══════════════════════════════════════════════
-
-        /* ─── Formatters ─── */
-        const fmt = (v) => v.toLocaleString("pt-BR", { maximumFractionDigits: 0 });
-        const fmtD = (v) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        const fmtPct = (v) => (v * 100).toFixed(1) + "%";
-
-        /* ─── Theme ─── */
-        const C = {
-          bg: "#06090F", card: "#0D1117", cardAlt: "#151B25", surface: "#1C2333",
-          border: "#21293A", borderLight: "#2D3748",
-          accent: "#3B82F6", accentGlow: "rgba(59,130,246,0.10)",
-          green: "#10B981", greenGlow: "rgba(16,185,129,0.08)",
-          amber: "#F59E0B", amberGlow: "rgba(245,158,11,0.08)",
-          red: "#EF4444", redGlow: "rgba(239,68,68,0.08)",
-          purple: "#8B5CF6", purpleGlow: "rgba(139,92,246,0.08)",
-          cyan: "#06B6D6", pink: "#EC4899",
-          text: "#E2E8F0", textMuted: "#94A3B8", textDim: "#64748B", textFaint: "#475569",
-        };
-
-        const TAX = {
-          irpj: { label: "IRPJ", color: "#3B82F6" },
-          csll: { label: "CSLL", color: "#8B5CF6" },
-          pis: { label: "PIS", color: "#06B6D6" },
-          cofins: { label: "COFINS", color: "#10B981" },
-          iss: { label: "ISS", color: "#F59E0B" },
-          inss: { label: "INSS Patronal", color: "#EF4444" },
-          jcp_irrf: { label: "JCP IRRF", color: "#EC4899" },
-        };
-        const TAX_KEYS = Object.keys(TAX);
-
-        /* ─── IRPF 2026 (Lei 15.270/2025) ─── */
-        const INSS_TETO_2026 = 8157.41;
-        const INSS_SOCIO_RATE = 0.11;
-
-        function calcINSSSocio(proLabore) {
-          return Math.min(proLabore, INSS_TETO_2026) * INSS_SOCIO_RATE;
-        }
-
-        function calcIRPFMensal(proLabore) {
-          const inssSocio = calcINSSSocio(proLabore);
-          const base = proLabore - inssSocio;
-          // Lei 15.270/2025: isenção efetiva até R$5.000 brutos
-          if (proLabore <= 5000) return 0;
-          // Tabela progressiva IRPF 2026
-          let imposto = 0;
-          if (base <= 2428.80) { imposto = 0; }
-          else if (base <= 2826.65) { imposto = base * 0.075 - 182.16; }
-          else if (base <= 3751.05) { imposto = base * 0.15 - 394.16; }
-          else if (base <= 4664.68) { imposto = base * 0.225 - 675.83; }
-          else { imposto = base * 0.275 - 908.85; }
-          return Math.max(0, imposto);
-        }
-
-        /* ─── IRPFM (Imposto Mínimo) ─── */
-        function calcIRPFM(rendaAnual, impostosJaPagos) {
-          if (rendaAnual <= 600000) return 0;
-          // Alíquota progressiva: 0% em R$600k, 10% em R$1.2M+
-          const aliq = Math.min(0.10, ((rendaAnual - 600000) / 600000) * 0.10);
-          const minimo = rendaAnual * aliq;
-          return Math.max(0, minimo - impostosJaPagos);
-        }
-
-        /* ─── Tax Calculations ─── */
-        function calcPresumido({ fat, pctExport, proLabore, nSocios, issRate }) {
-          const interno = fat * (1 - pctExport);
-          const excesso = Math.max(0, fat - 5000000);
-          const base = Math.min(fat, 5000000) * 0.32 + excesso * 0.352;
-          const irpj = base * 0.15 + Math.max(0, base - 240000) * 0.10;
-          const csll = base * 0.09;
-          return { irpj, csll, pis: interno * 0.0065, cofins: interno * 0.03, iss: interno * issRate, inss: proLabore * nSocios * 12 * 0.20, jcp_irrf: 0 };
-        }
-
-        function calcLucroReal({ fat, margem, pctExport, proLabore, nSocios, issRate, terceirizados, pdi, leidoBem, patente, jcpDedutivel }) {
-          const interno = fat * (1 - pctExport);
-          const lucroContabil = fat * margem;
-          const pisD = interno * 0.0165;
-          const cofD = interno * 0.076;
-          const crP = Math.min(pisD + fat * pctExport * 0.0165, terceirizados * 0.0165);
-          const crC = Math.min(cofD + fat * pctExport * 0.076, terceirizados * 0.076);
-          let exclusao = 0;
-          if (leidoBem && pdi > 0) exclusao = pdi * (patente ? 0.80 : 0.60);
-          const lucroFiscal = Math.max(0, lucroContabil - exclusao - jcpDedutivel);
-          const irpj = lucroFiscal * 0.15 + Math.max(0, lucroFiscal - 240000) * 0.10;
-          return { irpj, csll: lucroFiscal * 0.09, pis: Math.max(0, pisD - crP), cofins: Math.max(0, cofD - crC), iss: interno * issRate, inss: proLabore * nSocios * 12 * 0.20, jcp_irrf: jcpDedutivel * 0.175 };
-        }
-
-        function totalTax(t) { return TAX_KEYS.reduce((s, k) => s + (t[k] || 0), 0); }
-
-        /* ─── UI Atoms ─── */
-        function Slider({ label, value, onChange, min, max, step, format, hint, warn }) {
-          const disp = format === "money" ? "R$ " + fmt(value) : format === "pct" ? (value * 100).toFixed(0) + "%" : value;
-          return (
-            <div style={{ marginBottom: 15 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 2 }}>
-                <span style={{ fontSize: 11, color: C.textMuted }}>{label}</span>
-                <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text, fontFamily: "monospace" }}>{disp}</span>
-              </div>
-              <input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(Number(e.target.value))} style={{ width: "100%" }} />
-              {warn && <div style={{ fontSize: 9, color: C.amber, marginTop: 1 }}>{warn}</div>}
-              {hint && !warn && <div style={{ fontSize: 9, color: C.textDim, marginTop: 1 }}>{hint}</div>}
+                <div class="relative flex items-center shrink-0" title="Cor do Cartão">
+                    <input type="color" id="card-color-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" value="#ffffff">
+                    <button class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-square text-lg"></i></button>
+                </div>
+                <div class="relative flex items-center shrink-0" title="Cor do Timer">
+                    <input type="color" id="text-color-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" value="#292524">
+                    <button class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-text-t text-lg"></i></button>
+                </div>
+                <button id="notes-toggle" class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-notepad text-lg"></i></button>
+                <button id="settings-toggle" class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-gear text-lg"></i></button>
             </div>
-          );
-        }
+        </header>
 
-        function Toggle({ label, on, set, sub, disabled, tag, tagColor }) {
-          return (
-            <div style={{ marginBottom: 11, opacity: disabled ? 0.3 : 1, pointerEvents: disabled ? "none" : "auto" }}>
-              <div onClick={() => set(!on)} style={{ display: "flex", alignItems: "center", gap: 9, cursor: "pointer" }}>
-                <div style={{ width: 36, height: 19, borderRadius: 10, position: "relative", flexShrink: 0, background: on ? C.green : C.border, transition: "0.25s" }}>
-                  <div style={{ width: 15, height: 15, borderRadius: 8, background: "#fff", position: "absolute", top: 2, left: on ? 19 : 2, transition: "0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.35)" }} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 11.5, color: on ? C.text : C.textMuted, fontWeight: on ? 600 : 400 }}>{label}</span>
-                    {tag && <span style={{ fontSize: 8, padding: "1px 4px", borderRadius: 3, background: (tagColor || C.accent) + "22", color: tagColor || C.accent, fontWeight: 700 }}>{tag}</span>}
-                  </div>
-                  {sub && <div style={{ fontSize: 9, color: C.textDim, marginTop: 1, lineHeight: 1.3 }}>{sub}</div>}
-                </div>
-              </div>
+        <div class="flex p-1 bg-stone-100 rounded-full mb-10 w-full relative">
+            <div id="mode-indicator" class="absolute top-1 bottom-1 left-1 bg-white rounded-full shadow-sm transition-all duration-300 ease-out" style="width: calc(33.33% - 6px); transform: translateX(0%);"></div>
+            <button class="mode-btn relative z-10 flex-1 py-2 text-xs font-bold rounded-full text-stone-800" data-mode="pomodoro">Foco</button>
+            <button class="mode-btn relative z-10 flex-1 py-2 text-xs font-bold rounded-full text-stone-500" data-mode="shortBreak">Pausa</button>
+            <button class="mode-btn relative z-10 flex-1 py-2 text-xs font-bold rounded-full text-stone-500" data-mode="longBreak">Longa</button>
+        </div>
+
+        <div class="flex flex-col items-center justify-center mb-10">
+            <div class="text-[7rem] leading-none font-light tracking-tighter tabular-nums text-stone-800 transition-colors duration-500" id="time-display">25:00</div>
+            <input type="text" id="task-input" placeholder="Em que vais focar?" class="mt-4 w-full bg-transparent border-none text-center focus:outline-none opacity-60 hover:opacity-100 transition-all font-medium text-sm">
+        </div>
+
+        <div class="flex items-center gap-4 w-full mb-8">
+            <button id="reset-btn" class="w-14 h-14 rounded-full bg-stone-100 text-stone-500 flex items-center justify-center hover:bg-stone-200 active:scale-95"><i class="ph ph-arrow-counter-clockwise text-2xl"></i></button>
+            <button id="main-btn" class="flex-1 h-16 rounded-full bg-stone-900 text-white font-bold shadow-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
+                <i class="ph-fill ph-play text-xl" id="main-btn-icon"></i> <span id="main-btn-text">INICIAR</span>
+            </button>
+            <button id="open-reminder-btn" class="w-14 h-14 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center hover:bg-purple-200 active:scale-95"><i class="ph ph-microphone text-2xl"></i></button>
+        </div>
+
+        <button id="pip-toggle" class="text-xs text-stone-400 font-medium hover:text-stone-600 flex items-center gap-1">
+            <i class="ph ph-browsers"></i> Abrir Mini Player
+        </button>
+    </main>
+
+    <aside id="notes-sidebar" class="fixed right-0 top-0 h-full w-full sm:w-[24rem] bg-white shadow-2xl border-l transform translate-x-full transition-transform duration-300 z-40 flex flex-col">
+        <div class="p-4 border-b flex justify-between items-center bg-stone-50">
+            <h2 class="font-medium flex items-center gap-2"><i class="ph ph-notepad"></i> Anotações</h2>
+            <button id="close-notes" class="text-stone-400 p-2"><i class="ph ph-x text-xl"></i></button>
+        </div>
+        
+        <div class="px-4 py-2 border-b flex gap-2 items-center overflow-x-auto no-scrollbar bg-white">
+            <button onmousedown="event.preventDefault();" onclick="formatDoc('bold')" class="p-1.5 hover:bg-stone-100 rounded text-stone-600" title="Negrito"><i class="ph ph-text-b"></i></button>
+            <button onmousedown="event.preventDefault();" onclick="formatDoc('strikeThrough')" class="p-1.5 hover:bg-stone-100 rounded text-stone-600" title="Riscado"><i class="ph ph-text-strikethrough"></i></button>
+            
+            <button onmousedown="event.preventDefault();" onclick="formatDoc('backColor', '#fef08a')" class="p-1.5 hover:bg-yellow-100 rounded text-yellow-600" title="Grifar Amarelo"><i class="ph-fill ph-highlighter"></i></button>
+            
+            <div class="w-px h-5 bg-stone-200 mx-1 shrink-0"></div>
+            <input type="color" id="font-color-picker" class="w-6 h-6 p-0 border-0 cursor-pointer rounded" value="#292524" onchange="formatDoc('foreColor', this.value)" title="Cor da Letra">
+            <input type="color" id="hl-color-picker" class="w-6 h-6 p-0 border-0 cursor-pointer rounded" value="#fef08a" onchange="formatDoc('backColor', this.value)" title="Cor de Realce Personalizada">
+            
+            <select onchange="formatDoc('fontSize', this.value)" class="text-sm bg-transparent border rounded p-1 text-stone-600">
+                <option value="5">Normal</option><option value="6">Grande</option><option value="7">Enorme</option>
+            </select>
+        </div>
+
+        <div id="editor" contenteditable="true" placeholder="Escreva aqui..." class="flex-1 p-6 outline-none overflow-y-auto text-stone-700 text-2xl"></div>
+        
+        <div class="p-4 border-t bg-stone-50">
+            <div id="attachments-list" class="flex flex-col gap-2 mb-3"></div>
+            <input type="file" id="file-input" accept=".pdf,.docx,.xlsx" multiple class="hidden">
+            <button id="attach-btn" class="w-full py-2.5 rounded-xl border border-stone-200 bg-white flex items-center justify-center gap-2 text-sm text-stone-600 font-medium">
+                <i class="ph ph-paperclip text-lg"></i> Anexar Ficheiros
+            </button>
+        </div>
+    </aside>
+
+    <div id="settings-modal" class="hidden fixed inset-0 bg-stone-900/50 z-50 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-[2.5rem] w-full max-w-sm shadow-xl">
+            <h2 class="text-xl font-bold mb-6">Ajustar Tempos</h2>
+            <div class="space-y-4 mb-8">
+                <div class="flex justify-between items-center"><label class="text-sm">Foco</label><input type="number" id="input-pomodoro" class="w-16 p-2 bg-stone-50 border rounded-xl text-center font-bold" value="25"></div>
+                <div class="flex justify-between items-center"><label class="text-sm">Pausa Curta</label><input type="number" id="input-shortBreak" class="w-16 p-2 bg-stone-50 border rounded-xl text-center font-bold" value="5"></div>
+                <div class="flex justify-between items-center"><label class="text-sm">Pausa Longa</label><input type="number" id="input-longBreak" class="w-16 p-2 bg-stone-50 border rounded-xl text-center font-bold" value="15"></div>
             </div>
-          );
-        }
-
-        function Sec({ icon, text, color }) {
-          return <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10, fontWeight: 800, color: color || C.accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, marginTop: 2 }}><span>{icon}</span> {text}</div>;
-        }
-
-        function Card({ children, style: s }) {
-          return <div style={{ background: C.card, borderRadius: 11, padding: 15, border: `1px solid ${C.border}`, ...s }}>{children}</div>;
-        }
-
-        function KPI({ title, value, sub, color }) {
-          return (
-            <div style={{ background: C.card, borderRadius: 9, padding: "10px 12px", border: `1px solid ${C.border}`, flex: 1, minWidth: 110 }}>
-              <div style={{ fontSize: 8.5, color: C.textDim, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{title}</div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: color || C.text, fontFamily: "monospace" }}>{value}</div>
-              {sub && <div style={{ fontSize: 8.5, color: C.textMuted, marginTop: 1 }}>{sub}</div>}
+            <div class="flex gap-3">
+                <button id="cancel-settings" class="flex-1 py-3 rounded-xl bg-stone-100 font-medium">Sair</button>
+                <button id="save-settings" class="flex-1 py-3 rounded-xl bg-stone-900 text-white font-bold">Guardar</button>
             </div>
-          );
-        }
+        </div>
+    </div>
 
-        function HR() { return <div style={{ height: 1, background: C.border, margin: "12px 0" }} />; }
-
-        function Alert({ color, glow, children }) {
-          return <div style={{ background: glow, border: `1px solid ${color}33`, borderRadius: 9, padding: "10px 12px", fontSize: 10.5, color, lineHeight: 1.5, marginBottom: 7 }}>{children}</div>;
-        }
-
-        function Bar({ taxes, maxT, label, tot, pct, best }) {
-          return (
-            <div style={{ padding: "11px 13px", background: best ? C.greenGlow : C.card, borderRadius: 9, border: `1px solid ${best ? C.green + "55" : C.border}`, marginBottom: 7 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
-                <span style={{ fontSize: 10.5, fontWeight: 600, color: C.text, flex: 1, lineHeight: 1.3 }}>{label}</span>
-                <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 6 }}>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: best ? C.green : C.text, fontFamily: "monospace" }}>R$ {fmt(tot)}</span>
-                  <span style={{ fontSize: 9.5, color: best ? C.green : C.textMuted, marginLeft: 5, fontFamily: "monospace" }}>{pct}</span>
-                </div>
-              </div>
-              <div style={{ display: "flex", height: 15, borderRadius: 4, overflow: "hidden", background: C.bg }}>
-                {TAX_KEYS.map(k => { const w = maxT > 0 ? ((taxes[k] || 0) / maxT) * 100 : 0; return w > 0.3 ? <div key={k} title={`${TAX[k].label}: R$ ${fmt(taxes[k])}`} style={{ width: w + "%", background: TAX[k].color, transition: "width 0.4s", minWidth: 2 }} /> : null; })}
-              </div>
-            </div>
-          );
-        }
-
-        function DTable({ rows, fat }) {
-          return (
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 10 }}>
-                <thead><tr>
-                  <th style={{ textAlign: "left", padding: "6px 7px", color: C.textDim, borderBottom: `1px solid ${C.border}`, fontSize: 9.5, position: "sticky", left: 0, background: C.card, zIndex: 1 }}>Tributo</th>
-                  {rows.map((r, i) => <th key={i} style={{ textAlign: "right", padding: "6px 5px", color: C.textDim, borderBottom: `1px solid ${C.border}`, fontSize: 8.5, whiteSpace: "nowrap" }}>{r.tag}</th>)}
-                </tr></thead>
-                <tbody>
-                  {TAX_KEYS.map(k => <tr key={k}>
-                    <td style={{ padding: "4px 7px", color: C.text, borderBottom: `1px solid ${C.border}12`, whiteSpace: "nowrap", position: "sticky", left: 0, background: C.card, zIndex: 1 }}>
-                      <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, background: TAX[k].color, marginRight: 4, verticalAlign: "middle" }} />{TAX[k].label}
-                    </td>
-                    {rows.map((r, i) => <td key={i} style={{ textAlign: "right", padding: "4px 5px", color: (r.taxes[k] || 0) < 1 ? C.textDim : C.text, fontFamily: "monospace", fontSize: 10, borderBottom: `1px solid ${C.border}12` }}>{(r.taxes[k] || 0) < 1 ? "—" : fmt(r.taxes[k])}</td>)}
-                  </tr>)}
-                  <tr>
-                    <td style={{ padding: "6px 7px", fontWeight: 800, color: C.text, borderTop: `2px solid ${C.borderLight}`, position: "sticky", left: 0, background: C.card, zIndex: 1 }}>TOTAL</td>
-                    {rows.map((r, i) => <td key={i} style={{ textAlign: "right", padding: "6px 5px", fontWeight: 800, color: r.best ? C.green : C.text, fontFamily: "monospace", fontSize: 11, borderTop: `2px solid ${C.borderLight}` }}>{fmt(r.tot)}</td>)}
-                  </tr>
-                  <tr><td style={{ padding: "3px 7px", color: C.textDim, fontSize: 9.5, position: "sticky", left: 0, background: C.card, zIndex: 1 }}>% Faturamento</td>
-                    {rows.map((r, i) => <td key={i} style={{ textAlign: "right", padding: "3px 5px", color: r.best ? C.green : C.textDim, fontFamily: "monospace", fontSize: 9.5 }}>{fmtPct(r.tot / fat)}</td>)}</tr>
-                  <tr><td style={{ padding: "3px 7px", color: C.textDim, fontSize: 9.5, position: "sticky", left: 0, background: C.card, zIndex: 1 }}>Economia</td>
-                    {rows.map((r, i) => <td key={i} style={{ textAlign: "right", padding: "3px 5px", color: r.eco > 0 ? C.green : C.textDim, fontFamily: "monospace", fontSize: 9.5 }}>{r.eco > 0 ? `↓${fmt(r.eco)}` : "—"}</td>)}</tr>
-                </tbody>
-              </table>
-            </div>
-          );
-        }
-
-        /* ─── Partner remuneration detail row ─── */
-        function RemRow({ label, value, color, bold, indent, mono }) {
-          return (
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: `3px ${indent ? 16 : 0}px 3px 0` }}>
-              <span style={{ fontSize: 10.5, color: color || C.textMuted, fontWeight: bold ? 700 : 400 }}>{indent ? "└ " : ""}{label}</span>
-              <span style={{ fontSize: mono ? 11 : 10.5, fontFamily: mono ? "monospace" : "inherit", fontWeight: bold ? 800 : 500, color: color || C.text, whiteSpace: "nowrap" }}>{value}</span>
-            </div>
-          );
-        }
-
-        /* ─── MAIN APP COMPONENT (SEU CÓDIGO) ─── */
-        function SimuladorApp() {
-          const [fat, setFat] = useState(5000000);
-          const [margem, setMargem] = useState(0.275);
-          const [nSocios, setNSocios] = useState(5);
-          const [proLabore, setProLabore] = useState(5000);
-          const [terceirizados, setTerceirizados] = useState(2000000);
-
-          const [creative, setCreative] = useState(false);
-          const [exportOn, setExportOn] = useState(false);
-          const [pctExport, setPctExport] = useState(0.50);
-          const [pdiOn, setPdiOn] = useState(false);
-          const [pdi, setPdi] = useState(1500000);
-          const [leidoBem, setLeidoBem] = useState(false);
-          const [patente, setPatente] = useState(false);
-          const [jcpOn, setJcpOn] = useState(false);
-          const [plAtual, setPlAtual] = useState(800000);
-          const [rouanet, setRouanet] = useState(false);
-          const [rouanetVal, setRouanetVal] = useState(200000);
-
-          const [view, setView] = useState("bars");
-          const [section, setSection] = useState("empresa"); // empresa | socios
-
-          const iss = creative ? 0.02 : 0.05;
-          const exp = exportOn ? pctExport : 0;
-
-          // JCP calculation
-          const lucroContabil = fat * margem;
-          const jcpMax = jcpOn ? Math.min(plAtual * 0.065, lucroContabil * 0.50) : 0;
-          const jcpPorSocio = nSocios > 0 ? jcpMax / nSocios : 0;
-
-          const scenarios = useMemo(() => {
-            const base = { fat, margem, pctExport: 0, proLabore, nSocios };
-            const opt = { fat, margem, pctExport: exp, proLabore, nSocios };
-            const t1 = calcPresumido({ ...base, issRate: 0.05 });
-            const t2 = calcPresumido({ ...opt, issRate: iss });
-            const t3 = calcLucroReal({ ...opt, issRate: iss, terceirizados, pdi: 0, leidoBem: false, patente: false, jcpDedutivel: 0 });
-            const t4 = calcLucroReal({ ...opt, issRate: iss, terceirizados, pdi: pdiOn ? pdi : 0, leidoBem, patente: leidoBem && patente, jcpDedutivel: jcpMax });
-            const tots = [totalTax(t1), totalTax(t2), totalTax(t3), totalTax(t4)];
-            const minT = Math.min(...tots);
-            return [
-              { tag: "Pres. base", label: "Presumido · ISS 5% · Sem otimizações", taxes: t1, tot: tots[0], eco: 0, best: tots[0] === minT },
-              { tag: "Pres. otim.", label: `Presumido · ISS ${creative ? "2%" : "5%"}${exportOn ? " · Export" : ""}`, taxes: t2, tot: tots[1], eco: Math.max(0, tots[0] - tots[1]), best: tots[1] === minT },
-              { tag: "LR s/ LdB", label: `Lucro Real · ISS ${creative ? "2%" : "5%"}`, taxes: t3, tot: tots[2], eco: Math.max(0, tots[0] - tots[2]), best: tots[2] === minT },
-              { tag: "LR completo", label: `Lucro Real · Todos incentivos`, taxes: t4, tot: tots[3], eco: Math.max(0, tots[0] - tots[3]), best: tots[3] === minT },
-            ];
-          }, [fat, margem, nSocios, proLabore, terceirizados, exp, iss, pdiOn, pdi, leidoBem, patente, jcpMax, creative, exportOn]);
-
-          const maxT = Math.max(...scenarios.map(s => s.tot));
-          const bestS = scenarios.reduce((a, b) => a.tot < b.tot ? a : b);
-          const eco = scenarios[0].tot - bestS.tot;
-
-          /* ─── Remuneração dos Sócios (melhor cenário) ─── */
-          const rem = useMemo(() => {
-            const cargaPJ = bestS.tot;
-            const lucroDistribuivel = Math.max(0, lucroContabil - cargaPJ);
-            const lucroMesSocio = nSocios > 0 ? lucroDistribuivel / nSocios / 12 : 0;
-            const jcpMes = jcpPorSocio / 12;
-
-            // Pro-labore
-            const inssSocioMes = calcINSSSocio(proLabore);
-            const irpfMes = calcIRPFMensal(proLabore);
-            const proLaboreLiq = proLabore - inssSocioMes - irpfMes;
-            const inssPatronalMes = proLabore * 0.20;
-
-            // Dividendos
-            const excede50k = lucroMesSocio > 50000;
-            const irrfDivMes = excede50k ? lucroMesSocio * 0.10 : 0;
-            const divLiq = lucroMesSocio - irrfDivMes;
-
-            // JCP
-            const irrfJcpMes = jcpMes * 0.175;
-            const jcpLiq = jcpMes - irrfJcpMes;
-
-            // Total líquido mensal por sócio
-            const totalBrutoMes = proLabore + lucroMesSocio + jcpMes;
-            const totalLiqMes = proLaboreLiq + divLiq + jcpLiq;
-            const totalEncargos = inssSocioMes + irpfMes + irrfDivMes + irrfJcpMes;
-
-            // IRPFM anual
-            const rendaAnualSocio = (proLabore + lucroMesSocio + jcpMes) * 12;
-            const impostosJaPagos = (irpfMes + irrfDivMes + irrfJcpMes) * 12;
-            const irpfm = calcIRPFM(rendaAnualSocio, impostosJaPagos);
-
-            // Custo PJ total da remuneração
-            const custoEmpresa = (proLabore + inssPatronalMes) * nSocios * 12;
-
-            return {
-              proLabore, inssSocioMes, irpfMes, proLaboreLiq, inssPatronalMes,
-              lucroMesSocio, excede50k, irrfDivMes, divLiq,
-              jcpMes, irrfJcpMes, jcpLiq,
-              totalBrutoMes, totalLiqMes, totalEncargos,
-              rendaAnualSocio, impostosJaPagos, irpfm,
-              custoEmpresa, lucroDistribuivel,
-            };
-          }, [bestS.tot, lucroContabil, nSocios, proLabore, jcpPorSocio]);
-
-          return (
-            <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: C.bg, color: C.text, minHeight: "100vh", padding: "14px 12px 36px", maxWidth: 820, margin: "0 auto" }}>
-              <style>{`
-                input[type=range]{-webkit-appearance:none;appearance:none;height:5px;border-radius:3px;background:${C.border};outline:none;cursor:pointer}
-                input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:${C.accent};border:2px solid ${C.bg};box-shadow:0 0 6px rgba(59,130,246,0.4)}
-              `}</style>
-
-              {/* Header */}
-              <div style={{ textAlign: "center", marginBottom: 16, padding: "4px 0" }}>
-                <div style={{ fontSize: 8.5, color: C.accent, textTransform: "uppercase", letterSpacing: "0.2em", fontWeight: 700, marginBottom: 2 }}>Simulador Tributário Completo</div>
-                <h1 style={{ fontSize: 19, fontWeight: 900, margin: 0, lineHeight: 1.15, background: "linear-gradient(135deg, #E2E8F0, #94A3B8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                  Desenvolvedora & Publisher de Games
-                </h1>
-                <div style={{ fontSize: 9.5, color: C.textDim, marginTop: 3 }}>Porto Alegre/RS · Abril 2026 · Pessoa Jurídica + Pessoa Física</div>
-              </div>
-
-              {/* Section Tabs */}
-              <div style={{ display: "flex", gap: 0, marginBottom: 14, background: C.card, borderRadius: 8, overflow: "hidden", border: `1px solid ${C.border}` }}>
-                {[["empresa", "🏢 Empresa & Tributos PJ"], ["socios", "👥 Sócios & Remuneração"]].map(([k, lbl]) => (
-                  <button key={k} onClick={() => setSection(k)} style={{
-                    flex: 1, padding: "10px 0", border: "none", cursor: "pointer",
-                    background: section === k ? C.accent : "transparent",
-                    color: section === k ? "#fff" : C.textMuted,
-                    fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em",
-                  }}>{lbl}</button>
-                ))}
-              </div>
-
-              {/* SEÇÃO 1: EMPRESA & TRIBUTOS PJ */}
-              {section === "empresa" && (<>
-                <div style={{ display: "flex", gap: 7, marginBottom: 13, flexWrap: "wrap" }}>
-                  <KPI title="Carga Base" value={fmtPct(scenarios[0].tot / fat)} sub={`R$ ${fmt(scenarios[0].tot)}`} color={C.red} />
-                  <KPI title="Melhor Cenário" value={fmtPct(bestS.tot / fat)} sub={bestS.tag} color={C.green} />
-                  <KPI title="Economia" value={`R$ ${fmt(eco)}`} sub={eco > 0 ? `${fmtPct(eco / fat)} do fat.` : "—"} color={C.amber} />
-                </div>
-
-                <Card style={{ marginBottom: 12 }}>
-                  <Sec icon="🏢" text="Perfil da Empresa" color={C.textMuted} />
-                  <Slider label="Faturamento Anual" value={fat} onChange={setFat} min={500000} max={20000000} step={100000} format="money"
-                    warn={fat > 5000000 ? `⚠ LC 224/2025: majoração 10% sobre R$ ${fmt(fat - 5000000)}` : null} />
-                  <Slider label="Margem de Lucro" value={margem} onChange={setMargem} min={0.05} max={0.55} step={0.005} format="pct" />
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    <Slider label="Sócios" value={nSocios} onChange={setNSocios} min={1} max={12} step={1} />
-                    <Slider label="Pró-labore/mês" value={proLabore} onChange={setProLabore} min={1412} max={30000} step={500} format="money" />
-                  </div>
-                  <Slider label="Terceirizados PJ" value={terceirizados} onChange={setTerceirizados} min={0} max={6000000} step={50000} format="money" hint="Créditos PIS/COFINS no Lucro Real" />
-                </Card>
-
-                <Card style={{ marginBottom: 12 }}>
-                  <Sec icon="🎮" text="ISS Municipal" color={C.amber} />
-                  <Toggle label="Programa Creative — ISS 2%" on={creative} set={setCreative} tag="LC 906/2021" tagColor={C.amber} sub="Porto Alegre · 10 anos · Base tecnológica" />
-                  <HR />
-                  <Sec icon="🌍" text="Exportação" color={C.cyan} />
-                  <Toggle label="Segregar Exportação" on={exportOn} set={setExportOn} tag="LC 116/2003" tagColor={C.cyan} sub="Isenção ISS + PIS/COFINS" />
-                  {exportOn && <div style={{ marginLeft: 46 }}><Slider label="% Exportação" value={pctExport} onChange={setPctExport} min={0} max={1.0} step={0.05} format="pct" hint={pctExport === 1 ? "✓ 100% — ISS e PIS/COFINS zerados" : null} /></div>}
-                  <HR />
-                  <Sec icon="🔬" text="PD&I e Inovação" color={C.purple} />
-                  <Toggle label="Gastos PD&I qualificáveis" on={pdiOn} set={setPdiOn} tag="Lei 14.852/2024" tagColor={C.purple} sub="Marco Legal dos Games" />
-                  {pdiOn && <div style={{ marginLeft: 46 }}><Slider label="Gastos PD&I" value={pdi} onChange={setPdi} min={0} max={5000000} step={50000} format="money" hint="Incerteza tecnológica + avanço" /></div>}
-                  <Toggle label="Lei do Bem — Exclusão IRPJ/CSLL" on={leidoBem} set={setLeidoBem} tag="LUCRO REAL" tagColor={C.red} disabled={!pdiOn} sub={pdiOn ? "Exclusão 60% automática · Não afetada LC 224" : "→ Ative PD&I"} />
-                  <Toggle label="Patente INPI" on={patente} set={setPatente} tag="+20%" tagColor={C.green} disabled={!leidoBem} sub={leidoBem ? "60% → 80%" : "→ Ative Lei do Bem"} />
-                  <HR />
-                  <Sec icon="🎬" text="Captação" color={C.textMuted} />
-                  <Toggle label="Lei Rouanet" on={rouanet} set={setRouanet} tag="FINANCIAM." tagColor={C.textDim} sub="Games no art. 18 Lei 8.313/1991" />
-                  {rouanet && <div style={{ marginLeft: 46 }}><Slider label="Captação estimada" value={rouanetVal} onChange={setRouanetVal} min={0} max={2000000} step={25000} format="money" hint="Não altera carga tributária" /></div>}
-                </Card>
-
-                <div style={{ display: "flex", gap: 0, marginBottom: 10, background: C.card, borderRadius: 7, overflow: "hidden", border: `1px solid ${C.border}` }}>
-                  {[["bars", "📊 Visual"], ["table", "📋 Tabela"]].map(([k, lbl]) => (
-                    <button key={k} onClick={() => setView(k)} style={{ flex: 1, padding: "8px 0", border: "none", cursor: "pointer", background: view === k ? C.accent : "transparent", color: view === k ? "#fff" : C.textMuted, fontSize: 10, fontWeight: 700, textTransform: "uppercase" }}>{lbl}</button>
-                  ))}
-                </div>
-
-                {view === "bars" ? (
-                  <div>
-                    {scenarios.map((s, i) => <Bar key={i} taxes={s.taxes} maxT={maxT} label={s.label} tot={s.tot} pct={fmtPct(s.tot / fat)} best={s.best} />)}
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8, padding: "0 2px" }}>
-                      {TAX_KEYS.map(k => <div key={k} style={{ display: "flex", alignItems: "center", gap: 3 }}><div style={{ width: 6, height: 6, borderRadius: 2, background: TAX[k].color }} /><span style={{ fontSize: 8.5, color: C.textDim }}>{TAX[k].label}</span></div>)}
-                    </div>
-                  </div>
-                ) : (
-                  <Card style={{ padding: 8 }}><DTable rows={scenarios} fat={fat} /></Card>
-                )}
-
-                <div style={{ marginTop: 12 }}>
-                  {fat > 5000000 && <Alert color={C.amber} glow={C.amberGlow}><strong>⚠ LC 224/2025:</strong> Majoração 10% sobre R$ {fmt(fat - 5000000)} excedentes. ADIs 7.920/7.936 STF + liminares TRF-2/TRF-4.</Alert>}
-                  {leidoBem && pdiOn && pdi > 0 && <Alert color={C.green} glow={C.greenGlow}><strong>✓ Lei do Bem:</strong> Exclusão {patente ? "80%" : "60%"} × R$ {fmt(pdi)} = R$ {fmt(pdi * (patente ? 0.80 : 0.60))}. Preservada integralmente (IN RFB 31/12/2025).</Alert>}
-                  {exportOn && pctExport === 1 && <Alert color={C.purple} glow={C.purpleGlow}><strong>100% Export:</strong> ISS + PIS/COFINS zerados. Risco médio-alto — comprovação robusta exigida.</Alert>}
-                  {!creative && <Alert color={C.accent} glow={C.accentGlow}><strong>💡</strong> Ative o Creative: ~R$ {fmt(fat * (1 - exp) * 0.03)}/ano de economia imediata.</Alert>}
-                </div>
-              </>)}
-
-              {/* SEÇÃO 2: SÓCIOS & REMUNERAÇÃO */}
-              {section === "socios" && (<>
-                <div style={{ display: "flex", gap: 7, marginBottom: 13, flexWrap: "wrap" }}>
-                  <KPI title="Bruto/mês (sócio)" value={`R$ ${fmt(rem.totalBrutoMes)}`} sub="Pró-labore + Lucros + JCP" />
-                  <KPI title="Líquido/mês (sócio)" value={`R$ ${fmt(rem.totalLiqMes)}`} sub={`${fmtPct(rem.totalLiqMes / (rem.totalBrutoMes || 1))} do bruto`} color={C.green} />
-                  <KPI title="Encargos/mês (sócio)" value={`R$ ${fmt(rem.totalEncargos)}`} sub="INSS + IRPF + IRRF" color={C.red} />
-                </div>
-
-                <Card style={{ marginBottom: 12 }}>
-                  <Sec icon="💼" text="Pró-labore" color={C.amber} />
-                  <Slider label="Pró-labore mensal (por sócio)" value={proLabore} onChange={setProLabore} min={1412} max={30000} step={500} format="money"
-                    hint={`${nSocios} sócios · Total anual: R$ ${fmt(proLabore * nSocios * 12)}`}
-                    warn={proLabore < 3000 ? "⚠ Abaixo de R$ 3.000 pode ser questionado pela RFB" : null} />
-                  <Slider label="Número de sócios" value={nSocios} onChange={setNSocios} min={1} max={12} step={1}
-                    hint={`Lucro dividido por ${nSocios}: R$ ${fmt(rem.lucroMesSocio)}/mês cada`} />
-                  <HR />
-                  <Sec icon="💰" text="JCP — Juros sobre Capital Próprio" color={C.pink} />
-                  <Toggle label="Ativar JCP" on={jcpOn} set={setJcpOn} tag="LUCRO REAL" tagColor={C.red}
-                    sub="Dedutível no IRPJ/CSLL · IRRF 17,5% · LC 224/2025 + IN 2.296/2025" />
-                  {jcpOn && <div style={{ marginLeft: 46 }}>
-                    <Slider label="Patrimônio Líquido" value={plAtual} onChange={setPlAtual} min={100000} max={5000000} step={50000} format="money"
-                      hint={`JCP máx: R$ ${fmt(jcpMax)}/ano (TJLP 6,5% × PL, até 50% lucro)`} />
-                  </div>}
-                </Card>
-
-                <Card style={{ marginBottom: 12 }}>
-                  <Sec icon="👤" text={`Demonstrativo Mensal — 1 sócio (de ${nSocios})`} color={C.accent} />
-                  <div style={{ background: C.bg, borderRadius: 8, padding: "12px 14px", marginBottom: 10 }}>
-                    <div style={{ fontSize: 9, color: C.accent, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Pró-labore</div>
-                    <RemRow label="Bruto" value={`R$ ${fmtD(proLabore)}`} bold mono />
-                    <RemRow label="INSS do sócio (11%)" value={`- R$ ${fmtD(rem.inssSocioMes)}`} color={C.red} indent mono />
-                    <RemRow label="IRPF na fonte" value={rem.irpfMes > 0 ? `- R$ ${fmtD(rem.irpfMes)}` : "isento"} color={rem.irpfMes > 0 ? C.red : C.green} indent mono />
-                    <div style={{ height: 1, background: C.border, margin: "6px 0" }} />
-                    <RemRow label="Pró-labore líquido" value={`R$ ${fmtD(rem.proLaboreLiq)}`} bold color={C.text} mono />
-                  </div>
-
-                  <div style={{ background: C.bg, borderRadius: 8, padding: "12px 14px", marginBottom: 10 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                      <div style={{ fontSize: 9, color: C.green, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Distribuição de Lucros</div>
-                      {rem.excede50k && <span style={{ fontSize: 8, padding: "2px 5px", borderRadius: 3, background: C.redGlow, color: C.red, fontWeight: 700 }}>ACIMA R$50K</span>}
-                    </div>
-                    <RemRow label="Lucro distribuível/mês" value={`R$ ${fmtD(rem.lucroMesSocio)}`} bold mono />
-                    {rem.excede50k ? (
-                      <RemRow label="IRRF 10% (Lei 15.270/2025)" value={`- R$ ${fmtD(rem.irrfDivMes)}`} color={C.red} indent mono />
-                    ) : (
-                      <RemRow label="IRRF" value="isento (≤ R$ 50k/mês)" color={C.green} indent />
-                    )}
-                    <div style={{ height: 1, background: C.border, margin: "6px 0" }} />
-                    <RemRow label="Lucros líquidos" value={`R$ ${fmtD(rem.divLiq)}`} bold color={rem.excede50k ? C.amber : C.green} mono />
-                  </div>
-
-                  {jcpOn && jcpMax > 0 && (
-                    <div style={{ background: C.bg, borderRadius: 8, padding: "12px 14px", marginBottom: 10 }}>
-                      <div style={{ fontSize: 9, color: C.pink, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>JCP — Juros sobre Capital Próprio</div>
-                      <RemRow label="JCP bruto/mês" value={`R$ ${fmtD(rem.jcpMes)}`} bold mono />
-                      <RemRow label="IRRF 17,5%" value={`- R$ ${fmtD(rem.irrfJcpMes)}`} color={C.red} indent mono />
-                      <div style={{ height: 1, background: C.border, margin: "6px 0" }} />
-                      <RemRow label="JCP líquido" value={`R$ ${fmtD(rem.jcpLiq)}`} bold color={C.pink} mono />
-                    </div>
-                  )}
-
-                  <div style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.08), rgba(59,130,246,0.08))", borderRadius: 8, padding: "12px 14px", border: `1px solid ${C.green}33` }}>
-                    <div style={{ fontSize: 9, color: C.green, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Total Mensal — Sócio</div>
-                    <RemRow label="Remuneração bruta" value={`R$ ${fmtD(rem.totalBrutoMes)}`} bold mono />
-                    <RemRow label="Total encargos/retenções" value={`- R$ ${fmtD(rem.totalEncargos)}`} color={C.red} mono />
-                    <div style={{ height: 1, background: C.borderLight, margin: "6px 0" }} />
-                    <RemRow label="LÍQUIDO RECEBIDO" value={`R$ ${fmtD(rem.totalLiqMes)}`} bold color={C.green} mono />
-                    <div style={{ marginTop: 6 }}>
-                      <RemRow label="Carga efetiva sobre remuneração" value={fmtPct(rem.totalEncargos / (rem.totalBrutoMes || 1))} color={C.amber} />
-                    </div>
-                  </div>
-                </Card>
-
-                <Card style={{ marginBottom: 12 }}>
-                  <Sec icon="🏢" text="Custo para a Empresa (todos os sócios)" color={C.textMuted} />
-                  <div style={{ background: C.bg, borderRadius: 8, padding: "12px 14px" }}>
-                    <RemRow label={`Pró-labore total (${nSocios} × R$ ${fmt(proLabore)})`} value={`R$ ${fmt(proLabore * nSocios * 12)}/ano`} mono />
-                    <RemRow label="INSS Patronal (20%)" value={`R$ ${fmt(proLabore * 0.20 * nSocios * 12)}/ano`} color={C.red} indent mono />
-                    {jcpOn && jcpMax > 0 && <>
-                      <RemRow label="JCP total distribuído" value={`R$ ${fmt(jcpMax)}/ano`} mono />
-                      <RemRow label="IRRF JCP retido (17,5%)" value={`R$ ${fmt(jcpMax * 0.175)}/ano`} color={C.red} indent mono />
-                      <RemRow label="Economia IRPJ/CSLL pela dedução" value={`R$ ${fmt(jcpMax * 0.34)}/ano`} color={C.green} indent mono />
-                      <RemRow label="Economia líquida JCP" value={`R$ ${fmt(jcpMax * (0.34 - 0.175))}/ano`} color={C.green} bold mono />
-                    </>}
-                    <div style={{ height: 1, background: C.border, margin: "8px 0" }} />
-                    <RemRow label="Custo total pró-labore + encargos" value={`R$ ${fmt(rem.custoEmpresa)}/ano`} bold mono />
-                  </div>
-                </Card>
-
-                <Card style={{ marginBottom: 12 }}>
-                  <Sec icon="🎯" text="IRPF Mínimo — Lei 15.270/2025" color={C.purple} />
-                  <div style={{ background: C.bg, borderRadius: 8, padding: "12px 14px" }}>
-                    <RemRow label="Renda global anual (por sócio)" value={`R$ ${fmt(rem.rendaAnualSocio)}`} bold mono />
-                    <RemRow label="Impostos já pagos na fonte" value={`R$ ${fmt(rem.impostosJaPagos)}`} indent mono />
-                    {rem.rendaAnualSocio > 600000 ? (<>
-                      <RemRow label="Alíquota mínima efetiva" value={fmtPct(Math.min(0.10, (rem.rendaAnualSocio - 600000) / 600000 * 0.10))} color={C.amber} indent />
-                      <RemRow label="Tributo mínimo calculado" value={`R$ ${fmt(rem.rendaAnualSocio * Math.min(0.10, (rem.rendaAnualSocio - 600000) / 600000 * 0.10))}`} indent mono />
-                      <div style={{ height: 1, background: C.border, margin: "6px 0" }} />
-                      <RemRow label={rem.irpfm > 0 ? "IRPFM A PAGAR (complemento)" : "IRPFM — Já coberto"} value={rem.irpfm > 0 ? `R$ ${fmt(rem.irpfm)}/ano` : "R$ 0"} bold color={rem.irpfm > 0 ? C.red : C.green} mono />
-                    </>) : (
-                      <div style={{ marginTop: 6 }}>
-                        <RemRow label="Status" value="Abaixo de R$ 600k/ano — Não se aplica" color={C.green} />
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ fontSize: 9, color: C.textDim, marginTop: 8, lineHeight: 1.4 }}>
-                    O IRPFM incide quando a renda global anual excede R$ 600 mil, com alíquota progressiva de 0% a 10% (teto em R$ 1,2M+). Tributos já pagos (IRPF fonte, IRRF dividendos, IRRF JCP) são creditados. O complemento, se houver, é recolhido na declaração anual (DIRPF 2027, ref. 2026).
-                  </div>
-                </Card>
-
+    <div id="create-reminder-modal" class="hidden fixed inset-0 bg-stone-900/60 z-50 flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white p-8 rounded-[2.5rem] w-full max-w-md shadow-2xl">
+            <h2 class="text-xl font-bold mb-6 text-purple-700 flex items-center gap-2"><i class="ph ph-microphone-stage"></i> Novo Lembrete</h2>
+            <input type="text" id="reminder-title" placeholder="Título (Ex: Reunião)" class="w-full bg-stone-50 border rounded-xl px-4 py-3 mb-4 outline-none focus:ring-2 focus:ring-purple-400 font-medium">
+            <div class="grid grid-cols-2 gap-3 mb-6">
                 <div>
-                  {rem.excede50k && (
-                    <Alert color={C.red} glow={C.redGlow}>
-                      <strong>⚠ Dividendos &gt; R$ 50k/mês:</strong> ~R$ {fmt(rem.lucroMesSocio)}/mês por sócio. IRRF 10% sobre o <em>total</em> distribuído no mês (não apenas o excedente). Considerar: aumentar nº de sócios, escalonar distribuições, ou constituir holding.
-                    </Alert>
-                  )}
-                  {rem.irpfm > 0 && (
-                    <Alert color={C.purple} glow={C.purpleGlow}>
-                      <strong>IRPFM ativo:</strong> Renda global de R$ {fmt(rem.rendaAnualSocio)}/ano gera complemento de R$ {fmt(rem.irpfm)}/ano por sócio.
-                      Total {nSocios} sócios: R$ {fmt(rem.irpfm * nSocios)}/ano.
-                    </Alert>
-                  )}
-                  {!rem.excede50k && rem.rendaAnualSocio <= 600000 && (
-                    <Alert color={C.green} glow={C.greenGlow}>
-                      <strong>✓ Cenário otimizado:</strong> Dividendos abaixo de R$ 50k/mês e renda global abaixo de R$ 600k/ano.
-                      Sem IRRF sobre lucros e sem IRPFM. Calibragem ideal de pró-labore + distribuição.
-                    </Alert>
-                  )}
-                  {proLabore < 3000 && (
-                    <Alert color={C.amber} glow={C.amberGlow}>
-                      <strong>⚠ Pró-labore baixo:</strong> R$ {fmt(proLabore)}/mês pode ser questionado pela RFB como incompatível com a atividade. Recomendação: mínimo de R$ 3.000-5.000 para sócios de empresa de R$ {fmt(fat)} de faturamento.
-                    </Alert>
-                  )}
-                  {jcpOn && (
-                    <Alert color={C.pink} glow="rgba(236,72,153,0.08)">
-                      <strong>JCP:</strong> Economia líquida de R$ {fmt(jcpMax * (0.34 - 0.175))}/ano para a empresa. Cada sócio recebe R$ {fmtD(rem.jcpLiq)}/mês líquido. IN 2.296/2025: lucros do exercício corrente não entram na base.
-                    </Alert>
-                  )}
+                    <label class="text-[10px] uppercase font-bold text-stone-400 block mb-1">Minutos:</label>
+                    <input type="number" id="reminder-minutes" value="5" class="w-full bg-stone-50 border rounded-xl px-4 py-2.5 text-center font-bold" oninput="document.getElementById('reminder-datetime').value=''">
                 </div>
-              </>)}
-
-              {/* ── Premissas (ambas seções) ── */}
-              <div style={{ background: C.cardAlt, borderRadius: 9, padding: "11px 13px", border: `1px solid ${C.border}`, marginTop: 14, fontSize: 9, color: C.textDim, lineHeight: 1.65 }}>
-                <div style={{ fontWeight: 800, color: C.textMuted, marginBottom: 4, fontSize: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>Base Legal</div>
-                <div>• Presumido 32%: SC COSIT 36/2023 · PIS 0,65% + COFINS 3% · LC 224/2025 (majoração 10% &gt; R$5M)</div>
-                <div>• Lucro Real: PIS 1,65% + COFINS 7,6% não-cumulativos · Créditos sobre terceirizados</div>
-                <div>• Lei do Bem: Lei 11.196/2005 · 60-80% exclusão · <span style={{ color: C.green }}>Preservada (IN RFB 31/12/2025)</span></div>
-                <div>• ISS: STF ADIs 1.945/5.659 · Creative LC 906/2021 · Export LC 116/2003</div>
-                <div>• Dividendos: Lei 15.270/2025 · Isentos até R$ 50k/mês · IRRF 10% sobre total acima</div>
-                <div>• IRPFM: Lei 15.270/2025 · Renda &gt; R$ 600k/ano · Progressivo até 10% (R$ 1,2M)</div>
-                <div>• INSS sócio: 11% até teto R$ {fmt(INSS_TETO_2026)} · Patronal 20% · JCP: IRRF 17,5% LC 224/2025</div>
-                <div>• IRPF 2026: tabela progressiva + isenção efetiva até R$ 5.000 (Lei 15.270/2025)</div>
-                <div style={{ marginTop: 4, fontStyle: "italic", color: C.textFaint }}>Simulação para planejamento. Requer validação contábil e parecer tributarista.</div>
-              </div>
+                <div>
+                    <label class="text-[10px] uppercase font-bold text-stone-400 block mb-1">Data/Hora:</label>
+                    <input type="datetime-local" id="reminder-datetime" class="w-full bg-stone-50 border rounded-xl px-2 py-2 text-[11px] font-bold" oninput="document.getElementById('reminder-minutes').value=''">
+                </div>
             </div>
-          );
+            <div class="bg-purple-50 p-6 rounded-3xl text-center mb-6 border border-purple-100">
+                <button id="record-action-btn" class="bg-purple-600 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2 shadow-lg"><i class="ph-fill ph-microphone text-3xl"></i></button>
+                <p id="record-status" class="text-xs font-medium text-purple-800">Toque para gravar</p>
+            </div>
+            <div class="flex gap-3">
+                <button id="cancel-reminder" class="flex-1 py-3 rounded-xl bg-stone-100 font-medium">Cancelar</button>
+                <button id="save-reminder" class="flex-1 py-3 rounded-xl bg-purple-600 text-white font-bold disabled:opacity-50" disabled>Agendar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="trigger-reminder-modal" class="hidden fixed inset-0 bg-purple-900/95 z-[120] flex items-center justify-center text-white p-6">
+        <div class="text-center flex flex-col items-center max-w-sm">
+            <i class="ph ph-bell-ringing text-8xl mb-6 animate-bounce text-purple-200"></i>
+            <h2 id="trigger-reminder-title" class="text-3xl font-bold mb-4">Título</h2>
+            <audio id="trigger-reminder-audio" controls class="w-full mb-8"></audio>
+            <button id="close-trigger-reminder" class="bg-white text-purple-900 px-10 py-4 rounded-2xl font-bold w-full shadow-2xl">Entendido</button>
+        </div>
+    </div>
+
+    <script>
+        // Registro de Notificação e SW
+        if ('serviceWorker' in navigator) { 
+            navigator.serviceWorker.register('./sw.js'); 
+            Notification.requestPermission();
         }
 
-        // ═══════════════════════════════════════════════
-        // ESTRUTURA PRINCIPAL (LAYOUT COM BARRA LATERAL)
-        // ═══════════════════════════════════════════════
-        function MainApp() {
-            const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+        const MODES = { pomodoro: 25, shortBreak: 5, longBreak: 15 };
+        let currentMode = 'pomodoro', timeLeft = MODES[currentMode] * 60, isRunning = false;
+        let audioReminders = [];
 
-            return (
-                <div className="flex h-screen overflow-hidden">
-                    <div className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${isSidebarOpen ? 'mr-80' : 'mr-0'}`}>
-                        <SimuladorApp />
-                    </div>
-                    <SidebarNotes isOpen={isSidebarOpen} toggle={() => setIsSidebarOpen(!isSidebarOpen)} />
-                </div>
-            );
+        const timeDisplay = document.getElementById('time-display'), mainBtn = document.getElementById('main-btn');
+        const appBody = document.getElementById('app-body'), mainCard = document.getElementById('main-card');
+        const colorPicker = document.getElementById('color-picker'), cardColorPicker = document.getElementById('card-color-picker'), textColorPicker = document.getElementById('text-color-picker');
+
+        // Worker para timer robusto
+        let timerWorker = null;
+        function initWorker() {
+            const blob = new Blob([`let i=null; self.onmessage=e=>{if(e.data==='s'){if(!i)i=setInterval(()=>self.postMessage('t'),1000);}else{clearInterval(i);i=null;}};`], {type:'text/javascript'});
+            timerWorker = new Worker(URL.createObjectURL(blob));
+            timerWorker.onmessage = () => { if(isRunning){ timeLeft--; updateDisplay(); if(timeLeft <= 0){ isRunning=false; timerWorker.postMessage('p'); triggerTimeUp(); resetTimer(); } } };
+        }
+        initWorker();
+
+        function updateDisplay() {
+            const m = Math.floor(timeLeft/60).toString().padStart(2,'0');
+            const s = (timeLeft%60).toString().padStart(2,'0');
+            timeDisplay.textContent = `${m}:${s}`;
+            document.title = `${m}:${s} - Pomodoro`;
         }
 
-        // Renderização Final
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<MainApp />);
+        function triggerTimeUp() {
+            const msg = currentMode === 'pomodoro' ? "Sessão concluída!" : "Pausa terminada!";
+            alert(msg);
+            if (Notification.permission === "granted") new Notification("⏳ Pomodoro", { body: msg });
+        }
+
+        // --- LEMBRETES ---
+        let mediaRec, chunks = [], audioBase64 = null;
+        document.getElementById('record-action-btn').onclick = async () => {
+            if (!mediaRec || mediaRec.state === 'inactive') {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRec = new MediaRecorder(stream); chunks = [];
+                mediaRec.ondataavailable = e => chunks.push(e.data);
+                mediaRec.onstop = () => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(new Blob(chunks));
+                    reader.onloadend = () => { audioBase64 = reader.result; document.getElementById('save-reminder').disabled = false; };
+                };
+                mediaRec.start(); document.getElementById('record-status').textContent = "A gravar...";
+            } else {
+                mediaRec.stop(); document.getElementById('record-status').textContent = "Pronto!";
+                mediaRec.stream.getTracks().forEach(t => t.stop());
+            }
+        };
+
+        document.getElementById('save-reminder').onclick = () => {
+            const title = document.getElementById('reminder-title').value || "Lembrete de Voz";
+            const dt = document.getElementById('reminder-datetime').value;
+            const min = parseInt(document.getElementById('reminder-minutes').value);
+            const triggerTime = dt ? new Date(dt).getTime() : Date.now() + (min * 60000);
+            audioReminders.push({ id: Date.now(), title, audio: audioBase64, time: triggerTime });
+            saveData();
+            audioBase64 = null; document.getElementById('create-reminder-modal').classList.add('hidden');
+        };
+
+        setInterval(() => {
+            const now = Date.now();
+            audioReminders.forEach((rem, idx) => {
+                if (now >= rem.time) {
+                    document.getElementById('trigger-reminder-title').textContent = rem.title;
+                    document.getElementById('trigger-reminder-audio').src = rem.audio;
+                    document.getElementById('trigger-reminder-modal').classList.remove('hidden');
+                    if (Notification.permission === "granted") new Notification("🎤 " + rem.title, { body: "Ouve o teu áudio!", requireInteraction: true });
+                    audioReminders.splice(idx, 1); saveData();
+                }
+            });
+        }, 5000);
+
+        // --- SISTEMA DE DADOS ---
+        function saveData() {
+            const data = {
+                bgColor: colorPicker.value, cardColor: cardColorPicker.value, textColor: textColorPicker.value,
+                modes: MODES, notes: document.getElementById('editor').innerHTML, 
+                reminders: audioReminders, task: document.getElementById('task-input').value
+            };
+            localStorage.setItem('pomo_data_v2', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('pomo_data_v2');
+            if(saved) {
+                const d = JSON.parse(saved);
+                appBody.style.backgroundColor = d.bgColor; colorPicker.value = d.bgColor;
+                mainCard.style.backgroundColor = d.cardColor; cardColorPicker.value = d.cardColor;
+                timeDisplay.style.color = d.textColor; textColorPicker.value = d.textColor;
+                Object.assign(MODES, d.modes);
+                document.getElementById('editor').innerHTML = d.notes || "";
+                audioReminders = d.reminders || [];
+                document.getElementById('task-input').value = d.task || "";
+                timeLeft = MODES[currentMode] * 60; updateDisplay();
+            }
+        }
+
+        // --- UI & EDITOR ---
+        function formatDoc(cmd, val = null) { document.execCommand(cmd, false, val); saveData(); }
+        document.getElementById('editor').addEventListener('input', saveData);
+        document.getElementById('task-input').addEventListener('input', saveData);
+
+        mainBtn.onclick = () => {
+            if (isRunning) { isRunning = false; timerWorker.postMessage('p'); document.getElementById('main-btn-icon').className = "ph-fill ph-play text-xl"; document.getElementById('main-btn-text').textContent = "INICIAR"; }
+            else { isRunning = true; timerWorker.postMessage('s'); document.getElementById('main-btn-icon').className = "ph-fill ph-pause text-xl"; document.getElementById('main-btn-text').textContent = "PAUSAR"; }
+        };
+
+        function resetTimer() { isRunning = false; timerWorker.postMessage('p'); timeLeft = MODES[currentMode] * 60; updateDisplay(); document.getElementById('main-btn-icon').className = "ph-fill ph-play text-xl"; document.getElementById('main-btn-text').textContent = "INICIAR"; }
+        document.getElementById('reset-btn').onclick = resetTimer;
+
+        document.querySelectorAll('.mode-btn').forEach((btn, i) => btn.onclick = () => {
+            currentMode = btn.dataset.mode;
+            document.getElementById('mode-indicator').style.transform = `translateX(${i * 100}%)`;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.replace('text-stone-800', 'text-stone-500'));
+            btn.classList.replace('text-stone-500', 'text-stone-800');
+            resetTimer();
+        });
+
+        colorPicker.oninput = (e) => { appBody.style.backgroundColor = e.target.value; saveData(); };
+        cardColorPicker.oninput = (e) => { mainCard.style.backgroundColor = e.target.value; saveData(); };
+        textColorPicker.oninput = (e) => { timeDisplay.style.color = e.target.value; saveData(); };
+        
+        document.getElementById('notes-toggle').onclick = () => document.getElementById('notes-sidebar').classList.remove('translate-x-full');
+        document.getElementById('close-notes').onclick = () => document.getElementById('notes-sidebar').classList.add('translate-x-full');
+        document.getElementById('settings-toggle').onclick = () => document.getElementById('settings-modal').classList.remove('hidden');
+        document.getElementById('cancel-settings').onclick = () => document.getElementById('settings-modal').classList.add('hidden');
+        document.getElementById('open-reminder-btn').onclick = () => document.getElementById('create-reminder-modal').classList.remove('hidden');
+        document.getElementById('cancel-reminder').onclick = () => document.getElementById('create-reminder-modal').classList.add('hidden');
+        document.getElementById('close-trigger-reminder').onclick = () => document.getElementById('trigger-reminder-modal').classList.add('hidden');
+        document.getElementById('attach-btn').onclick = () => document.getElementById('file-input').click();
+        
+        document.getElementById('file-input').onchange = function() {
+            const list = document.getElementById('attachments-list');
+            Array.from(this.files).forEach(f => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-2 bg-white border rounded-lg text-[10px]";
+                div.innerHTML = `<span class="truncate w-32 font-bold">${f.name}</span><button onclick="this.parentElement.remove(); saveData();" class="text-red-500"><i class="ph ph-trash"></i></button>`;
+                list.appendChild(div);
+            });
+            saveData();
+        };
+
+        document.getElementById('save-settings').onclick = () => {
+            MODES.pomodoro = parseInt(document.getElementById('input-pomodoro').value);
+            MODES.shortBreak = parseInt(document.getElementById('input-shortBreak').value);
+            MODES.longBreak = parseInt(document.getElementById('input-longBreak').value);
+            saveData(); document.getElementById('settings-modal').classList.add('hidden'); resetTimer();
+        };
+
+        loadData(); updateDisplay();
     </script>
 </body>
 </html>
