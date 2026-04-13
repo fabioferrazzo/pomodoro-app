@@ -13,21 +13,24 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease; overflow-x: hidden; }
-        button, input { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        button, input { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         #editor[contenteditable="true"]:empty:before { content: attr(placeholder); color: #a8a29e; pointer-events: none; display: block; }
         .tabular-nums { font-variant-numeric: tabular-nums; }
 
-        /* Estilo do Título em Destaque durante o Timer */
+        /* DESTAQUE DO TÍTULO (60% do tamanho do timer: 4.2rem) */
         .title-active {
-            font-size: 1.8rem !important;
+            font-size: 4.2rem !important;
             font-weight: 800 !important;
             color: var(--timer-color, #1c1917) !important;
             opacity: 1 !important;
-            transform: scale(1.05);
-            margin-bottom: 0.5rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            transform: scale(1);
         }
     </style>
 </head>
@@ -67,7 +70,7 @@
 
         <div class="flex flex-col items-center justify-center mb-10 w-full">
             <input type="text" id="task-input" placeholder="Em que vais focar?" class="w-full bg-transparent border-none text-center focus:outline-none opacity-60 transition-all font-medium text-sm">
-            <div class="text-[7rem] leading-none font-light tracking-tighter tabular-nums text-stone-800" id="time-display">25:00</div>
+            <div class="text-[7rem] leading-none font-light tracking-tighter tabular-nums text-stone-800 transition-colors duration-500" id="time-display">25:00</div>
         </div>
 
         <div class="flex items-center gap-4 w-full mb-8">
@@ -88,20 +91,27 @@
             <h2 class="font-medium flex items-center gap-2"><i class="ph ph-notepad"></i> Anotações</h2>
             <button id="close-notes" class="text-stone-400 p-2"><i class="ph ph-x text-xl"></i></button>
         </div>
+        
         <div class="px-4 py-2 border-b flex gap-2 items-center overflow-x-auto no-scrollbar bg-white">
             <button onmousedown="event.preventDefault();" onclick="formatDoc('bold')" class="p-1.5 hover:bg-stone-100 rounded text-stone-600"><i class="ph ph-text-b"></i></button>
             <button onmousedown="event.preventDefault();" onclick="formatDoc('strikeThrough')" class="p-1.5 hover:bg-stone-100 rounded text-stone-600"><i class="ph ph-text-strikethrough"></i></button>
-            <button onmousedown="event.preventDefault();" onclick="formatDoc('backColor', '#fef08a')" class="p-1.5 hover:bg-yellow-100 rounded text-yellow-600"><i class="ph-fill ph-highlighter"></i></button>
+            <button onmousedown="event.preventDefault();" onclick="formatDoc('backColor', '#fef08a')" class="p-1.5 hover:bg-yellow-100 rounded text-yellow-600" title="Grifar Amarelo"><i class="ph-fill ph-highlighter"></i></button>
             <div class="w-px h-5 bg-stone-200 mx-1 shrink-0"></div>
+            <input type="color" onchange="formatDoc('foreColor', this.value)" class="w-6 h-6 border-0 p-0 rounded cursor-pointer" title="Cor da Letra">
+            <input type="color" onchange="formatDoc('backColor', this.value)" class="w-6 h-6 border-0 p-0 rounded cursor-pointer" title="Cor de Realce">
             <select onchange="formatDoc('fontSize', this.value)" class="text-sm bg-transparent border rounded p-1 text-stone-600">
                 <option value="5">Normal</option><option value="6">Grande</option><option value="7">Enorme</option>
             </select>
         </div>
+
         <div id="editor" contenteditable="true" placeholder="Escreva aqui..." class="flex-1 p-6 outline-none overflow-y-auto text-stone-700 text-2xl"></div>
+        
         <div class="p-4 border-t bg-stone-50">
             <div id="attachments-list" class="flex flex-col gap-2 mb-3"></div>
             <input type="file" id="file-input" multiple class="hidden">
-            <button id="attach-btn" class="w-full py-2.5 rounded-xl border border-stone-200 bg-white flex items-center justify-center gap-2 text-sm text-stone-600 font-medium"><i class="ph ph-paperclip"></i> Anexar Ficheiros</button>
+            <button id="attach-btn" class="w-full py-2.5 rounded-xl border border-stone-200 bg-white flex items-center justify-center gap-2 text-sm text-stone-600 font-medium">
+                <i class="ph ph-paperclip"></i> Anexar Ficheiros
+            </button>
         </div>
     </aside>
 
@@ -125,7 +135,7 @@
             <h2 class="text-xl font-bold mb-6 text-purple-700 flex items-center gap-2"><i class="ph ph-microphone-stage text-2xl"></i> Novo Lembrete</h2>
             <input type="text" id="reminder-title" placeholder="Título do lembrete..." class="w-full bg-stone-50 border rounded-xl px-4 py-3 mb-4 outline-none focus:ring-2 focus:ring-purple-400 font-medium">
             <div class="grid grid-cols-2 gap-3 mb-6">
-                <div><label class="text-[10px] uppercase font-bold text-stone-400 block mb-1">Em minutos:</label><input type="number" id="reminder-minutes" value="5" class="w-full bg-stone-50 border rounded-xl px-4 py-2 text-center font-bold" oninput="document.getElementById('reminder-datetime').value=''"></div>
+                <div><label class="text-[10px] uppercase font-bold text-stone-400 block mb-1">Minutos:</label><input type="number" id="reminder-minutes" value="5" class="w-full bg-stone-50 border rounded-xl px-4 py-2 text-center font-bold" oninput="document.getElementById('reminder-datetime').value=''"></div>
                 <div><label class="text-[10px] uppercase font-bold text-stone-400 block mb-1">Ou Data/Hora:</label><input type="datetime-local" id="reminder-datetime" class="w-full bg-stone-50 border rounded-xl px-2 py-2 text-[10px] font-bold" oninput="document.getElementById('reminder-minutes').value=''"></div>
             </div>
             <div class="bg-purple-50 p-6 rounded-3xl text-center mb-6 border border-purple-100">
@@ -137,7 +147,7 @@
                 <button id="save-reminder" class="flex-1 py-3 rounded-xl bg-purple-600 text-white font-bold disabled:opacity-50" disabled>Agendar</button>
             </div>
             <div class="border-t pt-4">
-                <label class="text-[10px] uppercase font-bold text-stone-400 block mb-2">Agendamentos Ativos:</label>
+                <label class="text-[10px] uppercase font-bold text-stone-400 block mb-2">Agendados:</label>
                 <div id="active-rem-list" class="space-y-2"></div>
             </div>
         </div>
@@ -163,17 +173,13 @@
 
         const MODES = { pomodoro: 25, shortBreak: 5, longBreak: 15 };
         let currentMode = 'pomodoro', timeLeft = MODES[currentMode] * 60, isRunning = false;
-        let audioReminders = JSON.parse(localStorage.getItem('pomo_reminders')) || [];
+        let audioReminders = [];
 
-        // Referências Explícitas (Corrigindo o bug dos botões)
-        const timeDisplay = document.getElementById('time-display');
-        const mainBtn = document.getElementById('main-btn');
-        const taskInput = document.getElementById('task-input');
-        const appBody = document.getElementById('app-body');
-        const mainCard = document.getElementById('main-card');
-        const inputPomo = document.getElementById('input-pomodoro');
-        const inputShort = document.getElementById('input-shortBreak');
-        const inputLong = document.getElementById('input-longBreak');
+        const timeDisplay = document.getElementById('time-display'), mainBtn = document.getElementById('main-btn');
+        const taskInput = document.getElementById('task-input'), appBody = document.getElementById('app-body');
+        const mainCard = document.getElementById('main-card'), inputPomo = document.getElementById('input-pomodoro');
+        const inputShort = document.getElementById('input-shortBreak'), inputLong = document.getElementById('input-longBreak');
+        const colorPicker = document.getElementById('color-picker'), cardColorPicker = document.getElementById('card-color-picker'), textColorPicker = document.getElementById('text-color-picker');
 
         // Worker Timer
         let timerWorker = null;
@@ -184,20 +190,45 @@
         }
         initWorker();
 
-        function updateDisplay() {
-            const m = Math.floor(timeLeft/60).toString().padStart(2,'0');
-            const s = (timeLeft%60).toString().padStart(2,'0');
-            timeDisplay.textContent = `${m}:${s}`;
-            document.title = `${m}:${s} - Pomodoro`;
-            drawPiP(`${m}:${s}`);
+        // --- SISTEMA DE DADOS COMPLETO ---
+        function saveData() {
+            const data = {
+                bgColor: colorPicker.value, cardColor: cardColorPicker.value, textColor: textColorPicker.value,
+                modes: MODES, notes: document.getElementById('editor').innerHTML, 
+                reminders: audioReminders, task: taskInput.value,
+                attachments: document.getElementById('attachments-list').innerHTML
+            };
+            localStorage.setItem('pomo_complete_data', JSON.stringify(data));
         }
 
-        // --- LEMBRETES (Correção Gravação) ---
+        function loadData() {
+            const saved = localStorage.getItem('pomo_complete_data');
+            if(saved) {
+                const d = JSON.parse(saved);
+                appBody.style.backgroundColor = d.bgColor; colorPicker.value = d.bgColor;
+                mainCard.style.backgroundColor = d.cardColor; cardColorPicker.value = d.cardColor;
+                timeDisplay.style.color = d.textColor; textColorPicker.value = d.textColor;
+                appBody.style.setProperty('--timer-color', d.textColor);
+                Object.assign(MODES, d.modes);
+                document.getElementById('editor').innerHTML = d.notes || "";
+                document.getElementById('attachments-list').innerHTML = d.attachments || "";
+                audioReminders = d.reminders || [];
+                taskInput.value = d.task || "";
+                timeLeft = MODES[currentMode] * 60; updateDisplay();
+            }
+        }
+
+        function updateDisplay() {
+            const m = Math.floor(timeLeft/60).toString().padStart(2,'0'), s = (timeLeft%60).toString().padStart(2,'0');
+            const str = `${m}:${s}`;
+            timeDisplay.textContent = str;
+            document.title = str + " - Pomodoro";
+            drawPiP(str);
+        }
+
+        // --- LEMBRETES ---
         let mediaRec, chunks = [], audioBase64 = null;
         document.getElementById('record-action-btn').onclick = async () => {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert("O seu navegador não suporta gravação de áudio."); return;
-            }
             if (!mediaRec || mediaRec.state === 'inactive') {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRec = new MediaRecorder(stream); chunks = [];
@@ -209,11 +240,11 @@
                 };
                 mediaRec.start(); 
                 document.getElementById('record-icon-main').className = "ph-fill ph-stop text-3xl";
-                document.getElementById('record-status').textContent = "A gravar... toque para parar.";
+                document.getElementById('record-status').textContent = "A gravar...";
             } else {
                 mediaRec.stop(); 
                 document.getElementById('record-icon-main').className = "ph-fill ph-microphone text-3xl";
-                document.getElementById('record-status').textContent = "Pronto para agendar!";
+                document.getElementById('record-status').textContent = "Pronto!";
                 mediaRec.stream.getTracks().forEach(t => t.stop());
             }
         };
@@ -228,16 +259,14 @@
                 </div>
             `).join('');
         }
-        window.deleteRem = (id) => { audioReminders = audioReminders.filter(r => r.id !== id); localStorage.setItem('pomo_reminders', JSON.stringify(audioReminders)); renderReminders(); };
+        window.deleteRem = (id) => { audioReminders = audioReminders.filter(r => r.id !== id); saveData(); renderReminders(); };
 
         document.getElementById('save-reminder').onclick = () => {
             const title = document.getElementById('reminder-title').value || "Lembrete";
             const dt = document.getElementById('reminder-datetime').value;
-            const min = parseInt(document.getElementById('reminder-minutes').value);
-            const triggerTime = dt ? new Date(dt).getTime() : Date.now() + (min * 60000);
+            const triggerTime = dt ? new Date(dt).getTime() : Date.now() + (parseInt(document.getElementById('reminder-minutes').value) * 60000);
             audioReminders.push({ id: Date.now(), title, audio: audioBase64, time: triggerTime });
-            localStorage.setItem('pomo_reminders', JSON.stringify(audioReminders));
-            audioBase64 = null; document.getElementById('create-reminder-modal').classList.add('hidden');
+            saveData(); audioBase64 = null; document.getElementById('create-reminder-modal').classList.add('hidden');
             renderReminders();
         };
 
@@ -249,14 +278,12 @@
                     document.getElementById('trigger-reminder-audio').src = rem.audio;
                     document.getElementById('trigger-reminder-modal').classList.remove('hidden');
                     if (Notification.permission === "granted") new Notification("🎤 " + rem.title);
-                    audioReminders.splice(idx, 1);
-                    localStorage.setItem('pomo_reminders', JSON.stringify(audioReminders));
-                    renderReminders();
+                    audioReminders.splice(idx, 1); saveData(); renderReminders();
                 }
             });
         }, 5000);
 
-        // --- UI & CONFIGURAÇÕES (Correção Botões) ---
+        // --- UI & EDITOR ---
         mainBtn.onclick = () => {
             if (isRunning) { 
                 isRunning = false; timerWorker.postMessage('p'); 
@@ -267,9 +294,10 @@
             }
             document.getElementById('main-btn-icon').className = isRunning ? "ph-fill ph-pause text-xl" : "ph-fill ph-play text-xl";
             document.getElementById('main-btn-text').textContent = isRunning ? "PAUSAR" : "INICIAR";
+            saveData();
         };
 
-        function resetTimer() { isRunning = false; timerWorker.postMessage('p'); timeLeft = MODES[currentMode] * 60; updateDisplay(); taskInput.classList.remove('title-active'); }
+        function resetTimer() { isRunning = false; timerWorker.postMessage('p'); timeLeft = MODES[currentMode] * 60; updateDisplay(); taskInput.classList.remove('title-active'); saveData(); }
         document.getElementById('reset-btn').onclick = resetTimer;
 
         document.querySelectorAll('.mode-btn').forEach((btn, i) => btn.onclick = () => {
@@ -278,28 +306,29 @@
             resetTimer();
         });
 
+        colorPicker.oninput = (e) => { appBody.style.backgroundColor = e.target.value; saveData(); };
+        cardColorPicker.oninput = (e) => { mainCard.style.backgroundColor = e.target.value; saveData(); };
+        textColorPicker.oninput = (e) => {
+            timeDisplay.style.color = e.target.value;
+            appBody.style.setProperty('--timer-color', e.target.value);
+            saveData();
+        };
+
+        function formatDoc(cmd, val = null) { document.execCommand(cmd, false, val); saveData(); }
+        document.getElementById('editor').oninput = saveData;
+        document.getElementById('task-input').oninput = saveData;
+
         document.getElementById('settings-toggle').onclick = () => {
-            inputPomo.value = MODES.pomodoro;
-            inputShort.value = MODES.shortBreak;
-            inputLong.value = MODES.longBreak;
+            inputPomo.value = MODES.pomodoro; inputShort.value = MODES.shortBreak; inputLong.value = MODES.longBreak;
             document.getElementById('settings-modal').classList.remove('hidden');
         };
 
         document.getElementById('save-settings').onclick = () => {
-            MODES.pomodoro = parseInt(inputPomo.value);
-            MODES.shortBreak = parseInt(inputShort.value);
-            MODES.longBreak = parseInt(inputLong.value);
-            document.getElementById('settings-modal').classList.add('hidden');
-            resetTimer();
+            MODES.pomodoro = parseInt(inputPomo.value); MODES.shortBreak = parseInt(inputShort.value); MODES.longBreak = parseInt(inputLong.value);
+            saveData(); document.getElementById('settings-modal').classList.add('hidden'); resetTimer();
         };
 
         // Outros Listeners
-        document.getElementById('color-picker').oninput = (e) => appBody.style.backgroundColor = e.target.value;
-        document.getElementById('card-color-picker').oninput = (e) => mainCard.style.backgroundColor = e.target.value;
-        document.getElementById('text-color-picker').oninput = (e) => {
-            timeDisplay.style.color = e.target.value;
-            appBody.style.setProperty('--timer-color', e.target.value);
-        };
         document.getElementById('notes-toggle').onclick = () => document.getElementById('notes-sidebar').classList.remove('translate-x-full');
         document.getElementById('close-notes').onclick = () => document.getElementById('notes-sidebar').classList.add('translate-x-full');
         document.getElementById('cancel-settings').onclick = () => document.getElementById('settings-modal').classList.add('hidden');
@@ -307,7 +336,17 @@
         document.getElementById('cancel-reminder').onclick = () => document.getElementById('create-reminder-modal').classList.add('hidden');
         document.getElementById('close-trigger-reminder').onclick = () => document.getElementById('trigger-reminder-modal').classList.add('hidden');
         document.getElementById('attach-btn').onclick = () => document.getElementById('file-input').click();
-        function formatDoc(cmd, val = null) { document.execCommand(cmd, false, val); }
+        
+        document.getElementById('file-input').onchange = function() {
+            const list = document.getElementById('attachments-list');
+            Array.from(this.files).forEach(f => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-2 bg-white border rounded-lg text-[10px]";
+                div.innerHTML = `<span class="truncate w-32 font-bold">${f.name}</span><button onclick="this.parentElement.remove(); saveData();" class="text-red-500"><i class="ph ph-trash"></i></button>`;
+                list.appendChild(div);
+            });
+            saveData();
+        };
 
         // PIP
         const canvas = document.getElementById('pip-canvas'), ctx = canvas.getContext('2d'), video = document.getElementById('pip-video');
@@ -317,14 +356,10 @@
             ctx.fillText(text, 150, 165);
         }
         document.getElementById('pip-toggle').onclick = async () => {
-            try {
-                video.srcObject = canvas.captureStream();
-                await video.play();
-                await video.requestPictureInPicture();
-            } catch(e) { alert("Mini Player não disponível."); }
+            try { video.srcObject = canvas.captureStream(); await video.play(); await video.requestPictureInPicture(); } catch(e) {}
         };
 
-        updateDisplay();
+        loadData(); updateDisplay();
     </script>
 </body>
 </html>
