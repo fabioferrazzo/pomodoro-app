@@ -3,209 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pomodoro Pro</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#bb2246">
+    <title>Pomodoro Minimalista</title>
+    
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#f5f5f4">
+    <link rel="apple-touch-icon" href="icon.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        :root { --bg-color: #bb2246; --card-bg: #ffffff; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); transition: background 0.5s; overflow: hidden; }
-        #sidebar-notes { transition: transform 0.3s; transform: translateX(100%); }
-        #sidebar-notes.open { transform: translateX(0); }
-        .timer-text { font-variant-numeric: tabular-nums; }
-        .dark-card { --card-bg: #1c1917; color: white !important; }
-        /* Brilho de alerta */
-        @keyframes alert-pulse { 0% { background-color: #dc2626; } 50% { background-color: #991b1b; } 100% { background-color: #dc2626; } }
-        .bg-alert { animation: alert-pulse 1.5s infinite; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease; overflow-x: hidden; }
+        button, input { transition: all 0.2s ease-in-out; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        #editor[contenteditable="true"]:empty:before { content: attr(placeholder); color: #a8a29e; pointer-events: none; display: block; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4" id="app-body">
+<body class="bg-stone-100 min-h-screen flex items-center justify-center text-stone-800 transition-colors duration-500" id="app-body">
 
-    <main id="main-card" class="bg-white w-full max-w-xl rounded-[2.5rem] shadow-2xl p-8 flex flex-col items-center relative z-10">
-        <div id="timer-display" class="text-[8rem] font-bold tracking-tighter mb-8 text-stone-800 timer-text">25:00</div>
-
-        <div class="flex items-center gap-6 mb-8">
-            <button onclick="resetTimer()" class="text-stone-400 text-3xl hover:text-stone-600"><i class="ph ph-arrow-counter-clockwise"></i></button>
-            <button onclick="toggleTimer()" id="btn-start" class="w-20 h-20 rounded-full text-white text-4xl shadow-xl flex items-center justify-center transition-all" style="background-color: var(--bg-color);">
-                <i id="play-icon" class="ph-fill ph-play ml-1"></i>
-            </button>
-            <button onclick="togglePiP()" class="text-stone-400 text-3xl hover:text-stone-600"><i class="ph ph-browsers"></i></button>
-        </div>
-
-        <nav class="w-full flex border-t pt-6 gap-4">
-            <button onclick="openVoiceModal()" class="flex-1 flex flex-col items-center gap-1 text-stone-400 hover:text-stone-800">
-                <i class="ph-fill ph-microphone text-2xl"></i><span class="text-xs font-bold">Lembrete</span>
-            </button>
-            <button onclick="openSidebar()" class="flex-1 flex flex-col items-center gap-1 text-stone-400 hover:text-stone-800">
-                <i class="ph-fill ph-notebook text-2xl"></i><span class="text-xs font-bold">Notas</span>
-            </button>
-            <button onclick="document.getElementById('tab-settings').classList.toggle('hidden')" class="flex-1 flex flex-col items-center gap-1 text-stone-400 hover:text-stone-800">
-                <i class="ph-fill ph-gear text-2xl"></i><span class="text-xs font-bold">Ajustes</span>
-            </button>
-        </nav>
-
-        <div id="tab-settings" class="hidden w-full mt-6 border-t pt-4 space-y-2">
-            <div class="grid grid-cols-2 gap-2">
-                <input type="number" id="in-pomo" class="bg-stone-50 p-2 rounded text-sm" placeholder="Foco (min)">
-                <input type="color" id="color-bg" class="w-full h-8 cursor-pointer rounded">
+    <main id="main-card" class="bg-white p-6 sm:p-10 rounded-[2.5rem] shadow-xl border border-stone-100 w-full max-w-lg mx-4 flex flex-col items-center z-10 relative">
+        
+        <header class="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            <h1 class="text-xl font-medium flex items-center gap-2 text-stone-600 shrink-0 mb-1 sm:mb-0">
+                <i class="ph ph-timer text-2xl"></i> Pomodoro
+            </h1>
+            
+            <div class="flex gap-2 overflow-x-auto w-full sm:justify-end no-scrollbar pb-1">
+                <div class="relative flex items-center shrink-0" title="Cor de Fundo">
+                    <input type="color" id="color-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" value="#f5f5f4">
+                    <button class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-paint-bucket text-xl"></i></button>
+                </div>
+                <div class="relative flex items-center shrink-0" title="Cor do Cartão">
+                    <input type="color" id="card-color-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" value="#ffffff">
+                    <button class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-square text-xl"></i></button>
+                </div>
+                <div class="relative flex items-center shrink-0" title="Cor do Timer">
+                    <input type="color" id="text-color-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" value="#292524">
+                    <button class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-text-t text-xl"></i></button>
+                </div>
+                <div class="w-px h-6 bg-stone-200 mx-1 self-center shrink-0"></div>
+                <button id="notes-toggle" class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-notepad text-xl"></i></button>
+                <button id="settings-toggle" class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-gear text-xl"></i></button>
+                <button id="sound-toggle" class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-speaker-high text-xl" id="sound-icon"></i></button>
+                <button id="pip-toggle" class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-browsers text-xl"></i></button>
             </div>
-            <button onclick="saveSettings()" class="w-full py-2 bg-stone-800 text-white rounded font-bold text-xs">Guardar</button>
+        </header>
+
+        <div class="flex p-1 bg-stone-100 rounded-full mb-6 w-full relative">
+            <div id="mode-indicator" class="absolute top-1 bottom-1 left-1 bg-white rounded-full shadow-sm transition-all duration-300 ease-out" style="width: calc(33.33% - 6px); transform: translateX(0%);"></div>
+            <button class="mode-btn relative z-10 flex-1 py-2 text-sm font-medium rounded-full text-stone-800" data-mode="pomodoro">Foco</button>
+            <button class="mode-btn relative z-10 flex-1 py-2 text-sm font-medium rounded-full text-stone-500" data-mode="shortBreak">Pausa Curta</button>
+            <button class="mode-btn relative z-10 flex-1 py-2 text-sm font-medium rounded-full text-stone-500" data-mode="longBreak">Pausa Longa</button>
         </div>
+
+        <div class="w-full mb-6 text-center">
+            <input type="text" id="task-input" placeholder="Em que vai focar-se?" class="w-full bg-stone-50/50 border border-stone-200 rounded-xl px-4 py-3 text-center focus:outline-none focus:ring-2 focus:ring-stone-400 transition-all font-medium">
+        </div>
+
+        <div class="text-[6rem] leading-none font-light tracking-tighter tabular-nums text-stone-800 mb-8" id="time-display">25:00</div>
+
+        <div class="flex items-center gap-3 w-full mb-6">
+            <button id="reset-btn" class="w-14 h-14 rounded-full bg-stone-100 text-stone-500 flex items-center justify-center"><i class="ph ph-arrow-counter-clockwise text-2xl"></i></button>
+            <button id="main-btn" class="flex-1 h-14 rounded-full bg-stone-800 text-white font-medium flex items-center justify-center gap-2">
+                <i class="ph-fill ph-play text-xl" id="main-btn-icon"></i> <span id="main-btn-text">INICIAR</span>
+            </button>
+            <button id="snooze-btn" class="w-14 h-14 rounded-full bg-stone-100 text-stone-500 font-bold text-sm">+10m</button>
+        </div>
+
+        <button id="open-reminder-btn" class="w-full py-3.5 rounded-2xl bg-purple-50 text-purple-700 font-medium border border-purple-100 flex items-center justify-center gap-2">
+            <i class="ph ph-microphone-stage text-xl"></i> Agendar Lembrete de Voz
+        </button>
     </main>
 
-    <!-- Modal Lembrete -->
-    <div id="voice-modal" class="fixed inset-0 bg-black/50 hidden z-[110] flex items-center justify-center p-4">
-        <div class="bg-white p-6 rounded-[2rem] w-full max-w-sm flex flex-col shadow-2xl">
-            <h3 class="text-xl font-bold mb-4 text-center">Agendar com Título</h3>
-            
-            <input type="text" id="rem-title" class="w-full bg-stone-50 p-3 rounded-xl mb-4 text-sm font-semibold outline-none focus:ring-2 focus:ring-purple-400" placeholder="Ex: Ligar para o cliente">
-            
-            <div class="grid grid-cols-2 gap-2 mb-4">
-                <input type="number" id="rem-min" class="bg-stone-50 p-3 rounded-xl text-center font-bold text-sm" value="5">
-                <input type="datetime-local" id="rem-date" class="bg-stone-50 p-3 rounded-xl text-[10px] font-bold">
-            </div>
-
-            <button onclick="toggleRecording()" id="rec-btn" class="w-16 h-16 rounded-full bg-purple-600 text-white text-2xl mx-auto mb-2 flex items-center justify-center shadow-lg active:scale-95 transition-all">
-                <i id="rec-icon" class="ph-fill ph-microphone"></i>
+    <aside id="notes-sidebar" class="fixed right-0 top-0 h-full w-full sm:w-[24rem] bg-white shadow-2xl border-l transform translate-x-full transition-transform duration-300 z-40 flex flex-col">
+        <div class="p-4 border-b flex justify-between items-center bg-stone-50">
+            <h2 class="font-medium flex items-center gap-2"><i class="ph ph-notepad"></i> Anotações</h2>
+            <button id="close-notes" class="text-stone-400 p-2"><i class="ph ph-x text-xl"></i></button>
+        </div>
+        <div class="px-4 py-2 border-b flex gap-2 items-center overflow-x-auto no-scrollbar bg-white">
+            <button onmousedown="event.preventDefault();" onclick="formatDoc('bold')" class="p-1.5 hover:bg-stone-100 rounded text-stone-600"><i class="ph ph-text-b"></i></button>
+            <button onmousedown="event.preventDefault();" onclick="formatDoc('strikeThrough')" class="p-1.5 hover:bg-stone-100 rounded text-stone-600"><i class="ph ph-text-strikethrough"></i></button>
+            <div class="w-px h-5 bg-stone-200 mx-1"></div>
+            <input type="color" id="font-color-picker" class="w-6 h-6 p-0 border-0 cursor-pointer rounded" value="#292524" onchange="formatDoc('foreColor', this.value)">
+            <input type="color" id="hl-color-picker" class="w-6 h-6 p-0 border-0 cursor-pointer rounded" value="#fef08a" onchange="formatDoc('backColor', this.value)">
+            <select onchange="formatDoc('fontSize', this.value)" class="text-sm bg-transparent border rounded p-1 text-stone-600">
+                <option value="5">Normal</option><option value="6">Grande</option><option value="7">Enorme</option>
+            </select>
+        </div>
+        <div id="editor" contenteditable="true" placeholder="Escreva aqui..." class="flex-1 p-5 outline-none overflow-y-auto text-stone-700 text-2xl"></div>
+        <div class="p-4 border-t bg-stone-50">
+            <div id="attachments-list" class="flex flex-col gap-2 mb-3"></div>
+            <input type="file" id="file-input" accept=".pdf,.docx,.xlsx" multiple class="hidden">
+            <button id="attach-btn" class="w-full py-2.5 rounded-xl border border-stone-200 bg-white flex items-center justify-center gap-2 text-sm text-stone-600">
+                <i class="ph ph-paperclip text-lg"></i> Anexar Ficheiros
             </button>
-            <p id="rec-status" class="text-[10px] text-stone-500 mb-6 text-center">Clique para gravar áudio</p>
-            
-            <div class="flex gap-2">
-                <button onclick="closeVoiceModal()" class="flex-1 py-3 bg-stone-100 rounded-xl font-bold text-xs">Cancelar</button>
-                <button id="save-rec" disabled onclick="saveReminder()" class="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold text-xs opacity-50">Agendar</button>
+        </div>
+    </aside>
+
+    <div id="settings-modal" class="hidden fixed inset-0 bg-stone-900/50 z-50 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-[2rem] w-full max-w-sm shadow-xl">
+            <h2 class="text-2xl font-medium mb-6 flex items-center gap-2"><i class="ph ph-gear"></i> Tempos (min)</h2>
+            <div class="space-y-4 mb-8">
+                <div class="flex justify-between items-center"><label>Foco</label><input type="number" id="input-pomodoro" class="w-20 p-2 bg-stone-50 border rounded-xl text-center" value="25"></div>
+                <div class="flex justify-between items-center"><label>Pausa Curta</label><input type="number" id="input-shortBreak" class="w-20 p-2 bg-stone-50 border rounded-xl text-center" value="5"></div>
+                <div class="flex justify-between items-center"><label>Pausa Longa</label><input type="number" id="input-longBreak" class="w-20 p-2 bg-stone-50 border rounded-xl text-center" value="15"></div>
+            </div>
+            <div class="flex gap-3">
+                <button id="cancel-settings" class="flex-1 py-3 rounded-xl bg-stone-100">Cancelar</button>
+                <button id="save-settings" class="flex-1 py-3 rounded-xl bg-stone-800 text-white">Guardar</button>
             </div>
         </div>
     </div>
 
-    <!-- TELA DE ALERTA DE SOBREPOSIÇÃO -->
-    <div id="alert-screen" class="fixed inset-0 bg-alert hidden z-[200] flex flex-col items-center justify-center text-white p-8">
-        <i class="ph-fill ph-bell-ringing text-8xl mb-6 animate-bounce"></i>
-        <h2 id="alert-msg-title" class="text-4xl font-bold mb-2 text-center">TITULO</h2>
-        <p class="mb-10 text-xl opacity-80">Seu lembrete de voz chegou!</p>
-        
-        <button onclick="playReminderAudio()" class="w-full max-w-xs py-5 bg-white text-red-600 rounded-2xl font-bold mb-4 shadow-2xl flex items-center justify-center gap-3 text-xl hover:scale-105 active:scale-95 transition-all">
-            <i class="ph-fill ph-play-circle text-3xl"></i> OUVIR AGORA
-        </button>
-        
-        <div class="flex gap-4 w-full max-w-xs">
-            <button onclick="snoozeReminder()" class="flex-1 py-4 bg-red-900/50 border border-white/20 rounded-xl font-bold text-sm hover:bg-red-900 transition-all">Soneca (10m)</button>
-            <button onclick="closeAlert()" class="flex-1 py-4 bg-stone-900/40 rounded-xl font-bold text-sm hover:bg-stone-950 transition-all">Fechar</button>
+    <div id="create-reminder-modal" class="hidden fixed inset-0 bg-stone-900/60 z-50 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-[2rem] w-full max-w-sm shadow-2xl">
+            <h2 class="text-xl font-bold mb-4 text-purple-700 flex items-center gap-2"><i class="ph ph-microphone-stage"></i> Novo Lembrete</h2>
+            <input type="text" id="reminder-title" placeholder="Título (Ex: Ligar para o cliente)" class="w-full bg-stone-50 border rounded-xl px-4 py-3 mb-4 outline-none focus:ring-2 focus:ring-purple-400">
+            <input type="number" id="reminder-minutes" value="5" min="1" class="w-full bg-stone-50 border rounded-xl px-4 py-3 mb-6 text-center font-bold">
+            <div class="bg-purple-50 p-4 rounded-2xl mb-6 text-center">
+                <button id="record-action-btn" class="bg-purple-600 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg"><i class="ph-fill ph-microphone text-3xl"></i></button>
+                <p id="record-status" class="text-sm font-medium text-purple-800">Clique para gravar</p>
+                <audio id="reminder-preview" controls class="w-full mt-3 hidden h-10"></audio>
+            </div>
+            <div class="flex gap-3">
+                <button id="cancel-reminder" class="flex-1 py-3 rounded-xl bg-stone-100">Cancelar</button>
+                <button id="save-reminder" class="flex-1 py-3 rounded-xl bg-purple-600 text-white disabled:opacity-50" disabled>Agendar</button>
+            </div>
         </div>
     </div>
 
-    <canvas id="pip-canvas" width="300" height="300" class="hidden"></canvas>
-    <video id="pip-video" class="hidden" muted autoplay playsinline></video>
+    <div id="trigger-reminder-modal" class="hidden fixed inset-0 bg-purple-900/90 z-[110] flex items-center justify-center text-white p-4">
+        <div class="text-center flex flex-col items-center p-8 bg-purple-800 rounded-[2.5rem] shadow-2xl w-full max-w-sm border border-purple-600">
+            <i class="ph ph-bell-ringing text-[5rem] mb-4 animate-bounce text-purple-300"></i>
+            <h2 class="text-3xl font-bold mb-2">Lembrete!</h2>
+            <p id="trigger-reminder-title" class="text-xl mb-6 text-purple-200">Título do lembrete</p>
+            <audio id="trigger-reminder-audio" controls class="w-full mb-8"></audio>
+            <button id="close-trigger-reminder" class="bg-white text-purple-800 px-8 py-3.5 rounded-xl font-bold w-full">Entendido</button>
+        </div>
+    </div>
+
+    <div id="time-up-modal" class="hidden fixed inset-0 bg-red-500 z-[100] flex items-center justify-center text-white">
+        <div class="text-center flex flex-col items-center p-8">
+            <i class="ph ph-bell-ringing text-[6rem] mb-6 animate-bounce"></i>
+            <h2 class="text-4xl font-bold mb-4">Tempo Esgotado!</h2>
+            <p id="time-up-msg" class="text-xl mb-12 opacity-90"></p>
+            <button id="close-time-up" class="bg-white text-red-500 px-10 py-4 rounded-full text-xl font-bold shadow-xl">Continuar</button>
+        </div>
+    </div>
 
     <script>
-        let MODES = JSON.parse(localStorage.getItem('pomo_cfg')) || { pomodoro: 25 };
-        let reminders = JSON.parse(localStorage.getItem('pomo_rem')) || [];
-        let timeLeft = MODES.pomodoro * 60, timerId = null, isRunning = false;
-        let mediaRecorder, chunks = [], audioBase64 = null, activeRem = null;
-
-        // Registrar SW e Pedir Permissão
-        if ('serviceWorker' in navigator) { 
-            navigator.serviceWorker.register('sw.js'); 
-            Notification.requestPermission();
+        if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+            window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
         }
 
-        function updateDisplay() {
-            const min = Math.floor(timeLeft / 60), sec = timeLeft % 60;
-            const str = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
-            document.getElementById('timer-display').textContent = str;
+        const MODES = { pomodoro: 25, shortBreak: 5, longBreak: 15 };
+        let currentMode = 'pomodoro', timeLeft = MODES[currentMode] * 60, isRunning = false;
+        let soundEnabled = true, customColorActive = false, isActiveSession = false;
+        let audioReminders = [];
+
+        const timeDisplay = document.getElementById('time-display'), mainBtn = document.getElementById('main-btn');
+        const taskInput = document.getElementById('task-input'), appBody = document.getElementById('app-body'), mainCard = document.getElementById('main-card');
+        const colorPicker = document.getElementById('color-picker'), cardColorPicker = document.getElementById('card-color-picker'), textColorPicker = document.getElementById('text-color-picker');
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Worker para timer robusto
+        let timerWorker = null;
+        function initWorker() {
+            const workerCode = `let int=null; self.onmessage=function(e){if(e.data==='start'){if(!int)int=setInterval(()=>self.postMessage('tick'),1000);}else{clearInterval(int);int=null;}};`;
+            timerWorker = new Worker(URL.createObjectURL(new Blob([workerCode], {type: 'application/javascript'})));
+            timerWorker.onmessage = () => { if(isRunning){ timeLeft--; updateDisplay(); if(timeLeft <= 0){ timerWorker.postMessage('stop'); isRunning = false; triggerTimeUp(); } } };
+        }
+        initWorker();
+
+        // --- SISTEMA DE DADOS COMPLETO ---
+        function saveData() {
+            const data = {
+                bgColor: colorPicker.value, cardColor: cardColorPicker.value, textColor: textColorPicker.value,
+                customColorActive: customColorActive, modes: MODES, soundEnabled: soundEnabled,
+                taskText: taskInput.value, notesHtml: document.getElementById('editor').innerHTML, 
+                attachmentsHtml: document.getElementById('attachments-list').innerHTML,
+                audioReminders: audioReminders
+            };
+            localStorage.setItem('pomodoroData', JSON.stringify(data));
         }
 
-        function toggleTimer() {
-            if(isRunning) clearInterval(timerId);
-            else timerId = setInterval(() => { timeLeft--; updateDisplay(); if(timeLeft<=0) resetTimer(); }, 1000);
-            isRunning = !isRunning;
-            document.getElementById('play-icon').className = isRunning ? "ph-fill ph-pause" : "ph-fill ph-play ml-1";
-        }
-
-        function resetTimer() { clearInterval(timerId); isRunning = false; timeLeft = MODES.pomodoro * 60; updateDisplay(); }
-
-        // --- VOZ ---
-        async function toggleRecording() {
-            if(!mediaRecorder || mediaRecorder.state === 'inactive') {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream); chunks = [];
-                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(new Blob(chunks));
-                    reader.onloadend = () => { 
-                        audioBase64 = reader.result; 
-                        document.getElementById('save-rec').disabled = false;
-                        document.getElementById('save-rec').classList.remove('opacity-50');
-                    };
-                };
-                mediaRecorder.start();
-                document.getElementById('rec-icon').className = "ph-fill ph-stop";
-                document.getElementById('rec-status').textContent = "A gravar...";
-            } else {
-                mediaRecorder.stop();
-                document.getElementById('rec-icon').className = "ph-fill ph-microphone";
-                document.getElementById('rec-status').textContent = "Pronto!";
-                mediaRecorder.stream.getTracks().forEach(t => t.stop());
+        function loadData() {
+            const saved = localStorage.getItem('pomodoroData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                if (data.customColorActive) { customColorActive = true; appBody.style.backgroundColor = data.bgColor; colorPicker.value = data.bgColor; }
+                if (data.cardColor) { mainCard.style.backgroundColor = data.cardColor; cardColorPicker.value = data.cardColor; }
+                if (data.textColor) { timeDisplay.style.color = data.textColor; textColorPicker.value = data.textColor; }
+                if (data.modes) Object.assign(MODES, data.modes);
+                if (data.soundEnabled !== undefined) soundEnabled = data.soundEnabled;
+                if (data.taskText) taskInput.value = data.taskText;
+                document.getElementById('editor').innerHTML = data.notesHtml || "";
+                document.getElementById('attachments-list').innerHTML = data.attachmentsHtml || "";
+                audioReminders = data.audioReminders || [];
+                timeLeft = MODES[currentMode] * 60;
             }
         }
 
-        function saveReminder() {
-            const title = document.getElementById('rem-title').value || "Lembrete de Voz";
-            const date = document.getElementById('rem-date').value;
-            const trigger = date ? new Date(date).getTime() : Date.now() + (document.getElementById('rem-min').value * 60000);
-            
-            reminders.push({ id: Date.now(), title, audio: audioBase64, time: trigger });
-            localStorage.setItem('pomo_rem', JSON.stringify(reminders));
-            audioBase64 = null; closeVoiceModal();
-        }
+        // --- LEMBRETES DE VOZ ---
+        let reminderMediaRecorder, reminderAudioChunks = [], isRecordingReminder = false, currentReminderBase64 = null;
 
-        // VERIFICADOR DE SEGUNDO PLANO
+        document.getElementById('record-action-btn').addEventListener('click', async () => {
+            if (!isRecordingReminder) {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                reminderMediaRecorder = new MediaRecorder(stream);
+                reminderAudioChunks = [];
+                reminderMediaRecorder.ondataavailable = e => reminderAudioChunks.push(e.data);
+                reminderMediaRecorder.onstop = () => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(new Blob(reminderAudioChunks, { type: 'audio/webm' }));
+                    reader.onloadend = () => { currentReminderBase64 = reader.result; document.getElementById('save-reminder').disabled = false; };
+                };
+                reminderMediaRecorder.start(); isRecordingReminder = true;
+                document.getElementById('record-status').textContent = "A gravar...";
+            } else {
+                reminderMediaRecorder.stop(); isRecordingReminder = false;
+                document.getElementById('record-status').textContent = "Pronto!";
+                reminderMediaRecorder.stream.getTracks().forEach(t => t.stop());
+            }
+        });
+
+        document.getElementById('save-reminder').addEventListener('click', () => {
+            const title = document.getElementById('reminder-title').value || "Lembrete";
+            const min = parseInt(document.getElementById('reminder-minutes').value) || 5;
+            audioReminders.push({ id: Date.now(), title, audioBase64: currentReminderBase64, triggerTime: Date.now() + (min * 60000), triggered: false });
+            saveData();
+            document.getElementById('cancel-reminder').click();
+        });
+
         setInterval(() => {
             const now = Date.now();
-            reminders.forEach((rem, idx) => {
-                if(now >= rem.time) {
-                    // 1. Notificação de Sistema (Banner Windows/Android)
-                    if (Notification.permission === "granted") {
-                        navigator.serviceWorker.ready.then(reg => {
-                            reg.showNotification(rem.title, {
-                                body: 'Toque para ouvir a mensagem gravada!',
-                                icon: 'icon.png',
-                                tag: 'pomo-' + rem.id,
-                                requireInteraction: true
-                            });
-                        });
-                    }
-                    // 2. Sobreposição Interna
-                    activeRem = rem;
-                    document.getElementById('alert-msg-title').textContent = rem.title;
-                    document.getElementById('alert-screen').classList.remove('hidden');
-                    
-                    reminders.splice(idx, 1);
-                    localStorage.setItem('pomo_rem', JSON.stringify(reminders));
+            audioReminders.forEach(rem => {
+                if (now >= rem.triggerTime && !rem.triggered) {
+                    rem.triggered = true;
+                    document.getElementById('trigger-reminder-title').textContent = rem.title;
+                    document.getElementById('trigger-reminder-audio').src = rem.audioBase64;
+                    document.getElementById('trigger-reminder-modal').classList.remove('hidden');
+                    if (Notification.permission === "granted") new Notification("🎤 Lembrete: " + rem.title);
                 }
             });
+            audioReminders = audioReminders.filter(r => !r.triggered);
         }, 5000);
 
-        function playReminderAudio() { if(activeRem) new Audio(activeRem.audio).play(); }
-        
-        function snoozeReminder() {
-            if(activeRem) {
-                activeRem.time = Date.now() + (10 * 60000);
-                reminders.push(activeRem);
-                localStorage.setItem('pomo_rem', JSON.stringify(reminders));
-                closeAlert();
-            }
+        // --- CORE UI ---
+        function updateDisplay() { timeDisplay.textContent = `${Math.floor(timeLeft/60).toString().padStart(2,'0')}:${(timeLeft%60).toString().padStart(2,'0')}`; }
+
+        function triggerTimeUp() {
+            const msg = currentMode === 'pomodoro' ? "Hora da pausa!" : "De volta ao foco!";
+            document.getElementById('time-up-msg').textContent = msg;
+            document.getElementById('time-up-modal').classList.remove('hidden');
+            if (Notification.permission === "granted") new Notification("⏳ Tempo Esgotado!", { body: msg });
         }
 
-        function closeAlert() { document.getElementById('alert-screen').classList.add('hidden'); activeRem = null; }
-        function openVoiceModal() { document.getElementById('voice-modal').classList.remove('hidden'); }
-        function closeVoiceModal() { document.getElementById('voice-modal').classList.add('hidden'); }
-        function openSidebar() { document.getElementById('sidebar-notes').classList.add('open'); }
-        function closeSidebar() { document.getElementById('sidebar-notes').classList.remove('open'); }
+        mainBtn.addEventListener('click', () => {
+            if (isRunning) { isRunning = false; timerWorker.postMessage('stop'); }
+            else { isRunning = true; timerWorker.postMessage('start'); Notification.requestPermission(); }
+            document.getElementById('main-btn-text').textContent = isRunning ? "PAUSAR" : "CONTINUAR";
+        });
 
-        updateDisplay();
+        document.getElementById('reset-btn').addEventListener('click', () => { isRunning = false; timerWorker.postMessage('stop'); timeLeft = MODES[currentMode] * 60; updateDisplay(); });
+        document.querySelectorAll('.mode-btn').forEach((btn, idx) => btn.addEventListener('click', () => {
+            currentMode = btn.dataset.mode;
+            document.getElementById('mode-indicator').style.transform = `translateX(${idx * 100}%)`;
+            document.getElementById('reset-btn').click();
+        }));
+
+        // Outros Listeners (Cores, Sidebar, etc)
+        colorPicker.oninput = (e) => { customColorActive = true; appBody.style.backgroundColor = e.target.value; saveData(); };
+        cardColorPicker.oninput = (e) => { mainCard.style.backgroundColor = e.target.value; saveData(); };
+        textColorPicker.oninput = (e) => { timeDisplay.style.color = e.target.value; saveData(); };
+        document.getElementById('notes-toggle').onclick = () => document.getElementById('notes-sidebar').classList.remove('translate-x-full');
+        document.getElementById('close-notes').onclick = () => document.getElementById('notes-sidebar').classList.add('translate-x-full');
+        document.getElementById('settings-toggle').onclick = () => document.getElementById('settings-modal').classList.remove('hidden');
+        document.getElementById('cancel-settings').onclick = () => document.getElementById('settings-modal').classList.add('hidden');
+        document.getElementById('cancel-reminder').onclick = () => document.getElementById('create-reminder-modal').classList.add('hidden');
+        document.getElementById('open-reminder-btn').onclick = () => document.getElementById('create-reminder-modal').classList.remove('hidden');
+        document.getElementById('close-time-up').onclick = () => document.getElementById('time-up-modal').classList.add('hidden');
+        document.getElementById('close-trigger-reminder').onclick = () => document.getElementById('trigger-reminder-modal').classList.add('hidden');
+        function formatDoc(cmd, val = null) { document.execCommand(cmd, false, val); saveData(); }
+        document.getElementById('attach-btn').onclick = () => document.getElementById('file-input').click();
+
+        loadData(); updateDisplay();
     </script>
 </body>
 </html>
