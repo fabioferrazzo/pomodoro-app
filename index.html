@@ -78,9 +78,13 @@
         <div class="px-4 py-2 border-b flex gap-2 items-center overflow-x-auto no-scrollbar bg-white">
             <button onmousedown="event.preventDefault();" onclick="formatDoc('bold')" class="p-1.5 hover:bg-stone-100 rounded text-stone-600" title="Negrito"><i class="ph ph-text-b"></i></button>
             <button onmousedown="event.preventDefault();" onclick="formatDoc('strikeThrough')" class="p-1.5 hover:bg-stone-100 rounded text-stone-600" title="Riscado"><i class="ph ph-text-strikethrough"></i></button>
+            <button onmousedown="event.preventDefault();" onclick="formatDoc('backColor', '#fef08a')" class="p-1.5 hover:bg-yellow-100 rounded text-yellow-600" title="Grifar Amarelo"><i class="ph-fill ph-highlighter"></i></button>
+            
             <div class="w-px h-5 bg-stone-200 mx-1"></div>
+            
             <input type="color" id="font-color-picker" class="w-6 h-6 p-0 border-0 cursor-pointer rounded" value="#292524" onchange="formatDoc('foreColor', this.value)" title="Cor da Letra">
-            <input type="color" id="hl-color-picker" class="w-6 h-6 p-0 border-0 cursor-pointer rounded" value="#fef08a" onchange="formatDoc('backColor', this.value)" title="Cor de Realce">
+            <input type="color" id="hl-color-picker" class="w-6 h-6 p-0 border-0 cursor-pointer rounded" value="#fef08a" onchange="formatDoc('backColor', this.value)" title="Cor de Realce Personalizada">
+            
             <select onchange="formatDoc('fontSize', this.value)" class="text-sm bg-transparent border rounded p-1 text-stone-600">
                 <option value="5">Normal</option><option value="6">Grande</option><option value="7">Enorme</option>
             </select>
@@ -126,7 +130,7 @@
                     <input type="datetime-local" id="reminder-datetime" class="w-full bg-stone-50 border rounded-xl px-2 py-2 text-[11px] font-bold" oninput="document.getElementById('reminder-minutes').value=''">
                 </div>
             </div>
-            <div class="bg-purple-50 p-6 rounded-3xl text-center mb-6">
+            <div class="bg-purple-50 p-6 rounded-3xl text-center mb-6 border border-purple-100">
                 <button id="record-action-btn" class="bg-purple-600 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2 shadow-lg"><i class="ph-fill ph-microphone text-3xl"></i></button>
                 <p id="record-status" class="text-xs font-medium text-purple-800">Toque para gravar</p>
             </div>
@@ -160,7 +164,7 @@
         const appBody = document.getElementById('app-body'), mainCard = document.getElementById('main-card');
         const colorPicker = document.getElementById('color-picker'), cardColorPicker = document.getElementById('card-color-picker');
 
-        // Worker para timer estável
+        // Worker para timer
         let timerWorker = null;
         function initWorker() {
             const blob = new Blob([`let i=null; self.onmessage=e=>{if(e.data==='s'){if(!i)i=setInterval(()=>self.postMessage('t'),1000);}else{clearInterval(i);i=null;}};`], {type:'text/javascript'});
@@ -217,7 +221,7 @@
             });
         }, 5000);
 
-        // Funções de UI
+        // Editor
         function formatDoc(cmd, val = null) { document.execCommand(cmd, false, val); }
 
         mainBtn.onclick = () => {
@@ -245,6 +249,7 @@
         document.getElementById('cancel-reminder').onclick = () => document.getElementById('create-reminder-modal').classList.add('hidden');
         document.getElementById('close-trigger-reminder').onclick = () => document.getElementById('trigger-reminder-modal').classList.add('hidden');
 
+        // Anexos
         document.getElementById('attach-btn').onclick = () => document.getElementById('file-input').click();
         document.getElementById('file-input').onchange = function() {
             const list = document.getElementById('attachments-list');
