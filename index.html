@@ -17,59 +17,56 @@
         body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease; overflow-x: hidden; }
         button, input { transition: all 0.2s ease-in-out; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         #editor[contenteditable="true"]:empty:before { content: attr(placeholder); color: #a8a29e; pointer-events: none; display: block; }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
     </style>
 </head>
 <body class="bg-stone-100 min-h-screen flex items-center justify-center text-stone-800 transition-colors duration-500" id="app-body">
 
-    <main id="main-card" class="bg-white p-6 sm:p-10 rounded-[2.5rem] shadow-xl border border-stone-100 w-full max-lg mx-4 flex flex-col items-center z-10 relative">
+    <main id="main-card" class="bg-white p-8 sm:p-10 rounded-[3rem] shadow-2xl border border-stone-100 w-full max-w-md mx-4 flex flex-col items-center z-10 relative">
         
-        <header class="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-            <h1 class="text-xl font-medium flex items-center gap-2 text-stone-600 shrink-0">
+        <header class="w-full flex justify-between items-center mb-8">
+            <h1 class="text-lg font-semibold flex items-center gap-2 text-stone-500">
                 <i class="ph ph-timer text-2xl"></i> Pomodoro
             </h1>
             
-            <div class="flex gap-2 overflow-x-auto w-full sm:justify-end no-scrollbar pb-1">
+            <div class="flex gap-1.5">
                 <div class="relative flex items-center shrink-0" title="Cor de Fundo">
                     <input type="color" id="color-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" value="#f5f5f4">
-                    <button class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-paint-bucket text-xl"></i></button>
+                    <button class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-paint-bucket text-lg"></i></button>
                 </div>
                 <div class="relative flex items-center shrink-0" title="Cor do Cartão">
                     <input type="color" id="card-color-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" value="#ffffff">
-                    <button class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-square text-xl"></i></button>
+                    <button class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-square text-lg"></i></button>
                 </div>
-                <div class="relative flex items-center shrink-0" title="Cor do Timer">
-                    <input type="color" id="text-color-picker" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" value="#292524">
-                    <button class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-text-t text-xl"></i></button>
-                </div>
-                <div class="w-px h-6 bg-stone-200 mx-1 self-center shrink-0"></div>
-                <button id="notes-toggle" class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-notepad text-xl"></i></button>
-                <button id="settings-toggle" class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-gear text-xl"></i></button>
-                <button id="pip-toggle" class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-browsers text-xl"></i></button>
+                <button id="notes-toggle" class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-notepad text-lg"></i></button>
+                <button id="settings-toggle" class="text-stone-400 hover:text-stone-600 p-2 rounded-full bg-stone-50"><i class="ph ph-gear text-lg"></i></button>
             </div>
         </header>
 
-        <div class="flex p-1 bg-stone-100 rounded-full mb-6 w-full relative">
+        <div class="flex p-1 bg-stone-100 rounded-full mb-10 w-full relative">
             <div id="mode-indicator" class="absolute top-1 bottom-1 left-1 bg-white rounded-full shadow-sm transition-all duration-300 ease-out" style="width: calc(33.33% - 6px); transform: translateX(0%);"></div>
-            <button class="mode-btn relative z-10 flex-1 py-2 text-sm font-medium rounded-full text-stone-800" data-mode="pomodoro">Foco</button>
-            <button class="mode-btn relative z-10 flex-1 py-2 text-sm font-medium rounded-full text-stone-500" data-mode="shortBreak">Pausa Curta</button>
-            <button class="mode-btn relative z-10 flex-1 py-2 text-sm font-medium rounded-full text-stone-500" data-mode="longBreak">Pausa Longa</button>
+            <button class="mode-btn relative z-10 flex-1 py-2 text-xs font-bold rounded-full text-stone-800" data-mode="pomodoro">Foco</button>
+            <button class="mode-btn relative z-10 flex-1 py-2 text-xs font-bold rounded-full text-stone-500" data-mode="shortBreak">Pausa</button>
+            <button class="mode-btn relative z-10 flex-1 py-2 text-xs font-bold rounded-full text-stone-500" data-mode="longBreak">Longa</button>
         </div>
 
-        <div class="w-full mb-6 text-center">
-            <input type="text" id="task-input" placeholder="Em que vai focar-se?" class="w-full bg-stone-50/50 border border-stone-200 rounded-xl px-4 py-3 text-center focus:outline-none focus:ring-2 focus:ring-stone-400 font-medium">
+        <div class="flex flex-col items-center justify-center mb-10">
+            <div class="text-[7rem] leading-none font-light tracking-tighter tabular-nums text-stone-800" id="time-display">25:00</div>
+            <input type="text" id="task-input" placeholder="Em que vais focar?" class="mt-4 w-full bg-transparent border-none text-center focus:outline-none opacity-60 hover:opacity-100 transition-all font-medium text-sm">
         </div>
 
-        <div class="text-[6rem] leading-none font-light tracking-tighter tabular-nums text-stone-800 mb-8" id="time-display">25:00</div>
-
-        <div class="flex items-center gap-3 w-full mb-6">
-            <button id="reset-btn" class="w-14 h-14 rounded-full bg-stone-100 text-stone-500 flex items-center justify-center"><i class="ph ph-arrow-counter-clockwise text-2xl"></i></button>
-            <button id="main-btn" class="flex-1 h-14 rounded-full bg-stone-800 text-white font-medium flex items-center justify-center gap-2">
+        <div class="flex items-center gap-4 w-full mb-8">
+            <button id="reset-btn" class="w-14 h-14 rounded-full bg-stone-100 text-stone-500 flex items-center justify-center hover:bg-stone-200"><i class="ph ph-arrow-counter-clockwise text-2xl"></i></button>
+            <button id="main-btn" class="flex-1 h-16 rounded-full bg-stone-900 text-white font-bold shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
                 <i class="ph-fill ph-play text-xl" id="main-btn-icon"></i> <span id="main-btn-text">INICIAR</span>
             </button>
-            <button id="open-reminder-btn" class="w-14 h-14 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center"><i class="ph ph-microphone text-2xl"></i></button>
+            <button id="open-reminder-btn" class="w-14 h-14 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center hover:bg-purple-200"><i class="ph ph-microphone text-2xl"></i></button>
         </div>
+
+        <button id="pip-toggle" class="text-xs text-stone-400 font-medium hover:text-stone-600 flex items-center gap-1">
+            <i class="ph ph-browsers"></i> Abrir Mini Player
+        </button>
     </main>
 
     <aside id="notes-sidebar" class="fixed right-0 top-0 h-full w-full sm:w-[24rem] bg-white shadow-2xl border-l transform translate-x-full transition-transform duration-300 z-40 flex flex-col">
@@ -77,20 +74,40 @@
             <h2 class="font-medium flex items-center gap-2"><i class="ph ph-notepad"></i> Anotações</h2>
             <button id="close-notes" class="text-stone-400 p-2"><i class="ph ph-x text-xl"></i></button>
         </div>
-        <div id="editor" contenteditable="true" placeholder="Escreva aqui..." class="flex-1 p-5 outline-none overflow-y-auto text-stone-700 text-2xl"></div>
+        
+        <div class="px-4 py-2 border-b flex gap-2 items-center overflow-x-auto no-scrollbar bg-white">
+            <button onmousedown="event.preventDefault();" onclick="formatDoc('bold')" class="p-1.5 hover:bg-stone-100 rounded text-stone-600" title="Negrito"><i class="ph ph-text-b"></i></button>
+            <button onmousedown="event.preventDefault();" onclick="formatDoc('strikeThrough')" class="p-1.5 hover:bg-stone-100 rounded text-stone-600" title="Riscado"><i class="ph ph-text-strikethrough"></i></button>
+            <div class="w-px h-5 bg-stone-200 mx-1"></div>
+            <input type="color" id="font-color-picker" class="w-6 h-6 p-0 border-0 cursor-pointer rounded" value="#292524" onchange="formatDoc('foreColor', this.value)" title="Cor da Letra">
+            <input type="color" id="hl-color-picker" class="w-6 h-6 p-0 border-0 cursor-pointer rounded" value="#fef08a" onchange="formatDoc('backColor', this.value)" title="Cor de Realce">
+            <select onchange="formatDoc('fontSize', this.value)" class="text-sm bg-transparent border rounded p-1 text-stone-600">
+                <option value="5">Normal</option><option value="6">Grande</option><option value="7">Enorme</option>
+            </select>
+        </div>
+
+        <div id="editor" contenteditable="true" placeholder="Escreva aqui..." class="flex-1 p-6 outline-none overflow-y-auto text-stone-700 text-2xl"></div>
+        
+        <div class="p-4 border-t bg-stone-50">
+            <div id="attachments-list" class="flex flex-col gap-2 mb-3"></div>
+            <input type="file" id="file-input" accept=".pdf,.docx,.xlsx" multiple class="hidden">
+            <button id="attach-btn" class="w-full py-2.5 rounded-xl border border-stone-200 bg-white flex items-center justify-center gap-2 text-sm text-stone-600 font-medium">
+                <i class="ph ph-paperclip text-lg"></i> Anexar Ficheiros
+            </button>
+        </div>
     </aside>
 
     <div id="settings-modal" class="hidden fixed inset-0 bg-stone-900/50 z-50 flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white p-8 rounded-[2rem] w-full max-w-sm shadow-xl">
-            <h2 class="text-2xl font-medium mb-6">Ajustar Tempos</h2>
+        <div class="bg-white p-8 rounded-[2.5rem] w-full max-w-sm shadow-xl">
+            <h2 class="text-xl font-bold mb-6">Ajustar Tempos</h2>
             <div class="space-y-4 mb-8">
-                <div class="flex justify-between items-center"><label>Foco</label><input type="number" id="input-pomodoro" class="w-20 p-2 bg-stone-50 border rounded-xl text-center" value="25"></div>
-                <div class="flex justify-between items-center"><label>Pausa Curta</label><input type="number" id="input-shortBreak" class="w-20 p-2 bg-stone-50 border rounded-xl text-center" value="5"></div>
-                <div class="flex justify-between items-center"><label>Pausa Longa</label><input type="number" id="input-longBreak" class="w-20 p-2 bg-stone-50 border rounded-xl text-center" value="15"></div>
+                <div class="flex justify-between items-center"><label class="text-sm">Foco</label><input type="number" id="input-pomodoro" class="w-16 p-2 bg-stone-50 border rounded-xl text-center font-bold" value="25"></div>
+                <div class="flex justify-between items-center"><label class="text-sm">Pausa Curta</label><input type="number" id="input-shortBreak" class="w-16 p-2 bg-stone-50 border rounded-xl text-center font-bold" value="5"></div>
+                <div class="flex justify-between items-center"><label class="text-sm">Pausa Longa</label><input type="number" id="input-longBreak" class="w-16 p-2 bg-stone-50 border rounded-xl text-center font-bold" value="15"></div>
             </div>
             <div class="flex gap-3">
-                <button id="cancel-settings" class="flex-1 py-3 rounded-xl bg-stone-100">Sair</button>
-                <button id="save-settings" class="flex-1 py-3 rounded-xl bg-stone-800 text-white font-bold">Guardar</button>
+                <button id="cancel-settings" class="flex-1 py-3 rounded-xl bg-stone-100 font-medium">Sair</button>
+                <button id="save-settings" class="flex-1 py-3 rounded-xl bg-stone-900 text-white font-bold">Guardar</button>
             </div>
         </div>
     </div>
@@ -98,27 +115,23 @@
     <div id="create-reminder-modal" class="hidden fixed inset-0 bg-stone-900/60 z-50 flex items-center justify-center backdrop-blur-sm p-4">
         <div class="bg-white p-8 rounded-[2.5rem] w-full max-w-md shadow-2xl">
             <h2 class="text-xl font-bold mb-6 text-purple-700 flex items-center gap-2"><i class="ph ph-microphone-stage"></i> Novo Lembrete</h2>
-            
             <input type="text" id="reminder-title" placeholder="Título do lembrete..." class="w-full bg-stone-50 border rounded-xl px-4 py-3 mb-4 outline-none focus:ring-2 focus:ring-purple-400">
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+            <div class="grid grid-cols-2 gap-3 mb-6">
                 <div>
-                    <label class="text-[10px] uppercase font-bold text-stone-400 block mb-1">Em minutos:</label>
+                    <label class="text-[10px] uppercase font-bold text-stone-400 block mb-1">Minutos:</label>
                     <input type="number" id="reminder-minutes" value="5" class="w-full bg-stone-50 border rounded-xl px-4 py-2.5 text-center font-bold" oninput="document.getElementById('reminder-datetime').value=''">
                 </div>
                 <div>
-                    <label class="text-[10px] uppercase font-bold text-stone-400 block mb-1">Ou Data e Hora:</label>
+                    <label class="text-[10px] uppercase font-bold text-stone-400 block mb-1">Data/Hora:</label>
                     <input type="datetime-local" id="reminder-datetime" class="w-full bg-stone-50 border rounded-xl px-2 py-2 text-[11px] font-bold" oninput="document.getElementById('reminder-minutes').value=''">
                 </div>
             </div>
-
-            <div class="bg-purple-50 p-6 rounded-3xl text-center mb-6 border border-purple-100">
-                <button id="record-action-btn" class="bg-purple-600 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg"><i class="ph-fill ph-microphone text-3xl"></i></button>
-                <p id="record-status" class="text-sm font-medium text-purple-800">Toque para gravar</p>
+            <div class="bg-purple-50 p-6 rounded-3xl text-center mb-6">
+                <button id="record-action-btn" class="bg-purple-600 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2 shadow-lg"><i class="ph-fill ph-microphone text-3xl"></i></button>
+                <p id="record-status" class="text-xs font-medium text-purple-800">Toque para gravar</p>
             </div>
-
             <div class="flex gap-3">
-                <button id="cancel-reminder" class="flex-1 py-3 rounded-xl bg-stone-100 font-medium">Cancelar</button>
+                <button id="cancel-reminder" class="flex-1 py-3 rounded-xl bg-stone-100">Cancelar</button>
                 <button id="save-reminder" class="flex-1 py-3 rounded-xl bg-purple-600 text-white font-bold disabled:opacity-50" disabled>Agendar</button>
             </div>
         </div>
@@ -141,11 +154,11 @@
 
         const MODES = { pomodoro: 25, shortBreak: 5, longBreak: 15 };
         let currentMode = 'pomodoro', timeLeft = MODES[currentMode] * 60, isRunning = false;
-        let customColorActive = false, audioReminders = [];
+        let audioReminders = [];
 
         const timeDisplay = document.getElementById('time-display'), mainBtn = document.getElementById('main-btn');
         const appBody = document.getElementById('app-body'), mainCard = document.getElementById('main-card');
-        const colorPicker = document.getElementById('color-picker'), cardColorPicker = document.getElementById('card-color-picker'), textColorPicker = document.getElementById('text-color-picker');
+        const colorPicker = document.getElementById('color-picker'), cardColorPicker = document.getElementById('card-color-picker');
 
         // Worker para timer estável
         let timerWorker = null;
@@ -160,11 +173,11 @@
             const m = Math.floor(timeLeft/60).toString().padStart(2,'0');
             const s = (timeLeft%60).toString().padStart(2,'0');
             timeDisplay.textContent = `${m}:${s}`;
+            document.title = `${m}:${s} - Pomodoro`;
         }
 
-        // --- LEMBRETES ---
+        // Lembretes
         let mediaRec, chunks = [], audioBase64 = null;
-
         document.getElementById('record-action-btn').onclick = async () => {
             if (!mediaRec || mediaRec.state === 'inactive') {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -187,12 +200,8 @@
             const dt = document.getElementById('reminder-datetime').value;
             const min = parseInt(document.getElementById('reminder-minutes').value);
             const triggerTime = dt ? new Date(dt).getTime() : Date.now() + (min * 60000);
-
             audioReminders.push({ id: Date.now(), title, audio: audioBase64, time: triggerTime });
-            localStorage.setItem('pomo_reminders', JSON.stringify(audioReminders));
-            
-            audioBase64 = null; 
-            document.getElementById('create-reminder-modal').classList.add('hidden');
+            audioBase64 = null; document.getElementById('create-reminder-modal').classList.add('hidden');
         };
 
         setInterval(() => {
@@ -202,21 +211,21 @@
                     document.getElementById('trigger-reminder-title').textContent = rem.title;
                     document.getElementById('trigger-reminder-audio').src = rem.audio;
                     document.getElementById('trigger-reminder-modal').classList.remove('hidden');
-                    if (Notification.permission === "granted") {
-                        new Notification("🎤 " + rem.title, { body: "Toque para ouvir a mensagem." });
-                    }
+                    if (Notification.permission === "granted") new Notification("🎤 " + rem.title);
                     audioReminders.splice(idx, 1);
                 }
             });
         }, 5000);
 
-        // --- EVENTOS UI ---
+        // Funções de UI
+        function formatDoc(cmd, val = null) { document.execCommand(cmd, false, val); }
+
         mainBtn.onclick = () => {
-            if (isRunning) { isRunning = false; timerWorker.postMessage('p'); mainBtn.innerHTML = '<i class="ph-fill ph-play text-xl"></i> INICIAR'; }
-            else { isRunning = true; timerWorker.postMessage('s'); mainBtn.innerHTML = '<i class="ph-fill ph-pause text-xl"></i> PAUSAR'; }
+            if (isRunning) { isRunning = false; timerWorker.postMessage('p'); document.getElementById('main-btn-icon').className = "ph-fill ph-play text-xl"; document.getElementById('main-btn-text').textContent = "INICIAR"; }
+            else { isRunning = true; timerWorker.postMessage('s'); document.getElementById('main-btn-icon').className = "ph-fill ph-pause text-xl"; document.getElementById('main-btn-text').textContent = "PAUSAR"; }
         };
 
-        function resetTimer() { isRunning = false; timerWorker.postMessage('p'); timeLeft = MODES[currentMode] * 60; updateDisplay(); mainBtn.innerHTML = '<i class="ph-fill ph-play text-xl"></i> INICIAR'; }
+        function resetTimer() { isRunning = false; timerWorker.postMessage('p'); timeLeft = MODES[currentMode] * 60; updateDisplay(); document.getElementById('main-btn-icon').className = "ph-fill ph-play text-xl"; document.getElementById('main-btn-text').textContent = "INICIAR"; }
         document.getElementById('reset-btn').onclick = resetTimer;
 
         document.querySelectorAll('.mode-btn').forEach((btn, i) => btn.onclick = () => {
@@ -225,10 +234,8 @@
             resetTimer();
         });
 
-        // Cores e Modais
         colorPicker.oninput = (e) => appBody.style.backgroundColor = e.target.value;
         cardColorPicker.oninput = (e) => mainCard.style.backgroundColor = e.target.value;
-        textColorPicker.oninput = (e) => timeDisplay.style.color = e.target.value;
         
         document.getElementById('notes-toggle').onclick = () => document.getElementById('notes-sidebar').classList.remove('translate-x-full');
         document.getElementById('close-notes').onclick = () => document.getElementById('notes-sidebar').classList.add('translate-x-full');
@@ -237,6 +244,17 @@
         document.getElementById('open-reminder-btn').onclick = () => document.getElementById('create-reminder-modal').classList.remove('hidden');
         document.getElementById('cancel-reminder').onclick = () => document.getElementById('create-reminder-modal').classList.add('hidden');
         document.getElementById('close-trigger-reminder').onclick = () => document.getElementById('trigger-reminder-modal').classList.add('hidden');
+
+        document.getElementById('attach-btn').onclick = () => document.getElementById('file-input').click();
+        document.getElementById('file-input').onchange = function() {
+            const list = document.getElementById('attachments-list');
+            Array.from(this.files).forEach(f => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-2 bg-white border rounded-lg text-[10px]";
+                div.innerHTML = `<span class="truncate w-32 font-bold">${f.name}</span><button onclick="this.parentElement.remove()" class="text-red-500"><i class="ph ph-trash"></i></button>`;
+                list.appendChild(div);
+            });
+        };
 
         document.getElementById('save-settings').onclick = () => {
             MODES.pomodoro = parseInt(document.getElementById('input-pomodoro').value);
