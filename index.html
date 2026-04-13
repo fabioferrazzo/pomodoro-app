@@ -21,16 +21,17 @@
         #editor[contenteditable="true"]:empty:before { content: attr(placeholder); color: #a8a29e; pointer-events: none; display: block; }
         .tabular-nums { font-variant-numeric: tabular-nums; }
 
-        /* DESTAQUE DO TÍTULO (60% do tamanho do timer: 4.2rem) */
+        /* DESTAQUE DO TÍTULO (80% do tamanho do timer: 5.6rem) */
         .title-active {
-            font-size: 4.2rem !important;
+            font-size: 5.6rem !important;
             font-weight: 800 !important;
             color: var(--timer-color, #1c1917) !important;
             opacity: 1 !important;
             line-height: 1.1;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             text-align: center;
             transform: scale(1);
+            word-break: break-word;
         }
     </style>
 </head>
@@ -93,12 +94,12 @@
         </div>
         
         <div class="px-4 py-2 border-b flex gap-2 items-center overflow-x-auto no-scrollbar bg-white">
-            <button onmousedown="event.preventDefault();" onclick="formatDoc('bold')" class="p-1.5 hover:bg-stone-100 rounded text-stone-600"><i class="ph ph-text-b"></i></button>
-            <button onmousedown="event.preventDefault();" onclick="formatDoc('strikeThrough')" class="p-1.5 hover:bg-stone-100 rounded text-stone-600"><i class="ph ph-text-strikethrough"></i></button>
+            <button onmousedown="event.preventDefault();" onclick="formatDoc('bold')" class="p-1.5 hover:bg-stone-100 rounded text-stone-600" title="Negrito"><i class="ph ph-text-b"></i></button>
+            <button onmousedown="event.preventDefault();" onclick="formatDoc('strikeThrough')" class="p-1.5 hover:bg-stone-100 rounded text-stone-600" title="Riscado"><i class="ph ph-text-strikethrough"></i></button>
             <button onmousedown="event.preventDefault();" onclick="formatDoc('backColor', '#fef08a')" class="p-1.5 hover:bg-yellow-100 rounded text-yellow-600" title="Grifar Amarelo"><i class="ph-fill ph-highlighter"></i></button>
             <div class="w-px h-5 bg-stone-200 mx-1 shrink-0"></div>
             <input type="color" onchange="formatDoc('foreColor', this.value)" class="w-6 h-6 border-0 p-0 rounded cursor-pointer" title="Cor da Letra">
-            <input type="color" onchange="formatDoc('backColor', this.value)" class="w-6 h-6 border-0 p-0 rounded cursor-pointer" title="Cor de Realce">
+            <input type="color" onchange="formatDoc('backColor', this.value)" class="w-6 h-6 border-0 p-0 rounded cursor-pointer" title="Cor de Realce Personalizada">
             <select onchange="formatDoc('fontSize', this.value)" class="text-sm bg-transparent border rounded p-1 text-stone-600">
                 <option value="5">Normal</option><option value="6">Grande</option><option value="7">Enorme</option>
             </select>
@@ -116,8 +117,8 @@
     </aside>
 
     <div id="settings-modal" class="hidden fixed inset-0 bg-stone-900/50 z-50 flex items-center justify-center backdrop-blur-sm px-4">
-        <div class="bg-white p-8 rounded-[2.5rem] w-full max-w-sm shadow-xl">
-            <h2 class="text-xl font-bold mb-6">Ajustar Tempos</h2>
+        <div class="bg-white p-8 rounded-[2.5rem] w-full max-sm shadow-xl">
+            <h2 class="text-xl font-bold mb-6 text-stone-700">Ajustar Tempos</h2>
             <div class="space-y-4 mb-8">
                 <div class="flex justify-between items-center"><label class="text-sm font-medium">Foco</label><input type="number" id="input-pomodoro" class="w-16 p-2 bg-stone-50 border rounded-xl text-center font-bold" value="25"></div>
                 <div class="flex justify-between items-center"><label class="text-sm font-medium">Pausa Curta</label><input type="number" id="input-shortBreak" class="w-16 p-2 bg-stone-50 border rounded-xl text-center font-bold" value="5"></div>
@@ -147,7 +148,7 @@
                 <button id="save-reminder" class="flex-1 py-3 rounded-xl bg-purple-600 text-white font-bold disabled:opacity-50" disabled>Agendar</button>
             </div>
             <div class="border-t pt-4">
-                <label class="text-[10px] uppercase font-bold text-stone-400 block mb-2">Agendados:</label>
+                <label class="text-[10px] uppercase font-bold text-stone-400 block mb-2">Agendamentos Ativos:</label>
                 <div id="active-rem-list" class="space-y-2"></div>
             </div>
         </div>
@@ -198,11 +199,11 @@
                 reminders: audioReminders, task: taskInput.value,
                 attachments: document.getElementById('attachments-list').innerHTML
             };
-            localStorage.setItem('pomo_complete_data', JSON.stringify(data));
+            localStorage.setItem('pomo_final_data', JSON.stringify(data));
         }
 
         function loadData() {
-            const saved = localStorage.getItem('pomo_complete_data');
+            const saved = localStorage.getItem('pomo_final_data');
             if(saved) {
                 const d = JSON.parse(saved);
                 appBody.style.backgroundColor = d.bgColor; colorPicker.value = d.bgColor;
@@ -283,7 +284,7 @@
             });
         }, 5000);
 
-        // --- UI & EDITOR ---
+        // --- UI CORE ---
         mainBtn.onclick = () => {
             if (isRunning) { 
                 isRunning = false; timerWorker.postMessage('p'); 
@@ -328,7 +329,6 @@
             saveData(); document.getElementById('settings-modal').classList.add('hidden'); resetTimer();
         };
 
-        // Outros Listeners
         document.getElementById('notes-toggle').onclick = () => document.getElementById('notes-sidebar').classList.remove('translate-x-full');
         document.getElementById('close-notes').onclick = () => document.getElementById('notes-sidebar').classList.add('translate-x-full');
         document.getElementById('cancel-settings').onclick = () => document.getElementById('settings-modal').classList.add('hidden');
